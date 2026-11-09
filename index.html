@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f2f2f7">
+<title>Premium Mini App — меню, корзина, заказы</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<input type="radio" name="tab" id="t-menu" checked>
+<input type="radio" name="tab" id="t-cart">
+<input type="radio" name="tab" id="t-orders">
+<input type="radio" name="tab" id="t-profile">
+<input type="radio" name="tab" id="t-admin">
+<input type="checkbox" class="hide" id="dark">
+<div class="app">
+<header><h1>Premium Food</h1><label for="dark" class="theme" title="Тема"></label></header>
+
+<section class="screen" id="menu">
+<h2>Меню</h2>
+<div class="chips"><a class="chip" href="#c1">Донар</a><a class="chip" href="#c2">Бургер</a><a class="chip" href="#c3">Хот-дог</a><a class="chip" href="#c4">Напитки</a><a class="chip" href="#c5">Пицца</a></div>
+<h3 id="c1">Донар</h3><div class="grid">
+<div class="p"><div class="img">🌯</div><div class="body"><b>Донар классик</b><small>Говядина, свежие овощи, лаваш</small><span class="price">32 000 сум</span><label for="t-cart" class="btn">Добавить</label></div></div>
+<div class="p"><div class="img">🌯</div><div class="body"><b>Донар куриный</b><small>Курица на гриле, соус, салат</small><span class="price">28 000 сум</span><label for="t-cart" class="btn">Добавить</label></div></div>
+<div class="p"><div class="img">🌯</div><div class="body"><b>Донар XL</b><small>Двойная порция мяса и сыр</small><span class="price">42 000 сум</span><label for="t-cart" class="btn">Добавить</label></div></div></div>
+<h3 id="c2">Бургер</h3><div class="grid">
+<div class="p"><div class="img b">🍔</div><div class="body"><b>Чизбургер</b><small>Говяжья котлета, чеддер, томат</small><span class="price">35 000 сум</span><label for="t-cart" class="btn">Добавить</label></div></div>
+<div class="p"><div class="img b">🍔</div><div class="body"><b>Биг бургер</b><small>Две котлеты, лук, фирменный соус</small><span class="price">48 000 сум</span><label for="t-cart" class="btn">Добавить</label></div></div></div>
+<h3 id="c3">Хот-дог</h3><div class="grid">
+<div class="p"><div class="img h">🌭</div><div class="body"><b>Хот-дог классик</b><small>Сосиска, горчица, булочка бриошь</small><span class="price">18 000 сум</span><label for="t-cart" class="btn">Добавить</label></div></div>
+<div class="p off"><div class="img h">🌭</div><div class="body"><b>Хот-дог датский</b><small>Хрустящий лук, огурчики</small><span class="price">22 000 сум</span><span class="btn">Нет в наличии</span></div></div></div>
+<h3 id="c4">Напитки</h3><div class="grid">
+<div class="p"><div class="img n">🍋</div><div class="body"><b>Лимонад</b><small>Лимон, мята, лёд</small><span class="price">15 000 сум</span><label for="t-cart" class="btn">Добавить</label></div></div>
+<div class="p"><div class="img n">🥛</div><div class="body"><b>Айран</b><small>Освежающий, домашний</small><span class="price">9 000 сум</span><label for="t-cart" class="btn">Добавить</label></div></div></div>
+<h3 id="c5">Пицца</h3><div class="grid">
+<div class="p"><div class="img z">🍕</div><div class="body"><b>Пепперони</b><small>Пепперони, моцарелла, томатный соус</small><span class="price">75 000 сум</span><label for="t-cart" class="btn">Добавить</label></div></div>
+<div class="p"><div class="img z">🍕</div><div class="body"><b>Маргарита</b><small>Моцарелла, томаты, базилик</small><span class="price">62 000 сум</span><label for="t-cart" class="btn">Добавить</label></div></div></div>
+</section>
+
+<section class="screen" id="cart">
+<h2>Корзина</h2>
+<div class="list">
+<div class="row"><div class="img thumb">🌯</div><div class="grow"><b>Донар классик</b><small>Острый · Сыр</small><small>37 000 сум</small></div><div class="qty"><span>−</span>2<span>+</span></div></div>
+<div class="row"><div class="img n thumb">🍋</div><div class="grow"><b>Лимонад</b><small>0.7 л</small><small>20 000 сум</small></div><div class="qty"><span>−</span>1<span>+</span></div></div>
+</div>
+<h3>Итого</h3>
+<div class="list sum"><div class="row"><span>Подытог</span><span>94 000 сум</span></div><div class="row"><span>Доставка</span><span>10 000 сум</span></div><div class="row t"><span>Итого</span><span>104 000 сум</span></div></div>
+<br><label for="t-orders" class="btn main">Оформить заказ</label>
+</section>
+
+<section class="screen" id="orders">
+<h2>Мои заказы</h2>
+<div class="track"><div style="display:flex;justify-content:space-between"><b>Активный заказ #1042</b><span class="badge s3">В пути</span></div>
+<div class="steps"><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div>
+<small class="muted">Курьер Азиз · Донар классик ×2, Лимонад ×1</small></div>
+<div class="list">
+<div class="row"><div class="grow"><b>#1042 · 89 000 сум</b><small>09.11.2026, 18:40</small></div><span class="badge s3">В пути</span></div>
+<div class="row"><div class="grow"><b>#1035 · 85 000 сум</b><small>05.11.2026, 13:12 · Пепперони ×1</small></div><span class="badge s4">Доставлен</span></div>
+<div class="row"><div class="grow"><b>#1021 · 98 000 сум</b><small>28.10.2026, 20:05 · Чизбургер ×2, Айран ×2</small></div><span class="badge s4">Доставлен</span></div>
+</div>
+</section>
+
+<section class="screen" id="profile">
+<div class="avatar">А</div><h2 class="center" style="margin:0">Абдулбасир</h2><p class="center muted">@abdulbasir</p>
+<div class="stats"><div class="stat"><small class="muted">Число заказов</small><b>3</b></div><div class="stat"><small class="muted">Сумма всего заказов</small><b>272 000 сум</b></div></div>
+<h3>Настройки</h3>
+<div class="list">
+<div class="row"><div class="grow">📍 Сохраненный адрес<small>Ташкент, ул. Амира Темура, 15</small></div><span class="chev"></span></div>
+<div class="row"><div class="grow">🌐 Язык</div><div class="seg"><span>RU</span><span>UZ</span><span>EN</span></div></div>
+<label class="row" for="dark" style="cursor:pointer"><div class="grow">🌓 Тёмная тема</div><span class="chev"></span></label>
+<div class="row"><div class="grow">💬 Служба поддержки</div><span class="chev"></span></div>
+</div>
+</section>
+
+<section class="screen" id="admin">
+<h2>Админ</h2>
+<div class="stats" style="margin:0"><div class="stat"><small class="muted">Новые заказы</small><b>2</b></div><div class="stat"><small class="muted">Выручка сегодня</small><b>223 000 сум</b></div></div>
+<h3>Заказы</h3>
+<div class="list">
+<div class="row"><div class="grow"><b>#1044 · Жасур</b><small>Хот-дог датский ×3 · 76 000 сум</small></div><select><option>Готовится</option><option>Принят</option><option>В пути</option><option>Доставлен</option></select></div>
+<div class="row"><div class="grow"><b>#1043 · Дилноза</b><small>Биг бургер ×1 · 58 000 сум</small></div><select><option>Принят</option><option>Готовится</option><option>В пути</option><option>Доставлен</option></select></div>
+<div class="row"><div class="grow"><b>#1042 · Абдулбасир</b><small>Курьер: Азиз · 89 000 сум</small></div><select><option>В пути</option><option>Принят</option><option>Готовится</option><option>Доставлен</option></select></div>
+</div>
+<h3>Курьеры</h3>
+<div class="list"><div class="row"><div class="grow">Азиз</div><small class="muted">1 заказ</small></div><div class="row"><div class="grow">Бобур</div><small class="muted">свободен</small></div><div class="row"><div class="grow">Санжар</div><small class="muted">свободен</small></div><div class="row"><div class="grow">Тимур</div><small class="muted">свободен</small></div></div>
+<h3>Стоп-лист</h3>
+<div class="list"><div class="row"><div class="grow">Хот-дог датский</div><span class="switch off"></span></div><div class="row"><div class="grow">Донар классик</div><span class="switch"></span></div><div class="row"><div class="grow">Пепперони</div><span class="switch"></span></div></div>
+</section>
+
+<nav>
+<label for="t-menu"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7.5" height="7.5" rx="2"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="2"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="2"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="2"/></svg>Меню</label>
+<label for="t-cart"><svg viewBox="0 0 24 24"><path d="M6 8h12l-1.2 11.2a1.5 1.5 0 0 1-1.5 1.3H8.7a1.5 1.5 0 0 1-1.5-1.3L6 8Z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/></svg>Корзина<span class="cnt">3</span></label>
+<label for="t-orders"><svg viewBox="0 0 24 24"><path d="M12 3 3 7.5v9L12 21l9-4.5v-9L12 3Z"/><path d="m3 7.5 9 4.5 9-4.5"/><path d="M12 12v9"/></svg>Заказы</label>
+<label for="t-profile"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></svg>Профиль</label>
+<label for="t-admin"><svg viewBox="0 0 24 24"><path d="M4 7h10"/><path d="M18 7h2"/><circle cx="16" cy="7" r="2"/><path d="M4 17h2"/><path d="M10 17h10"/><circle cx="8" cy="17" r="2"/></svg>Админ</label>
+</nav>
+</div>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script>
+(function () {
+  var tg = window.Telegram && window.Telegram.WebApp;
+  if (tg) {
+    tg.ready();
+    tg.expand();
+    if (tg.setHeaderColor) tg.setHeaderColor('#f2f2f7');
+    if (tg.setBackgroundColor) tg.setBackgroundColor('#f2f2f7');
+  }
+
+  function showLocation(lat, lon, source) {
+    var addr = document.querySelector('#profile .row .grow small');
+    if (addr) {
+      addr.textContent = lat.toFixed(5) + ', ' + lon.toFixed(5) + ' (' + source + ')';
+    }
+    try {
+      localStorage.setItem('pf_location', JSON.stringify({ lat: lat, lon: lon, ts: Date.now() }));
+    } catch (e) {}
+    console.log('Location:', lat, lon, source);
+  }
+
+  function fallbackGeo() {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      function (pos) { showLocation(pos.coords.latitude, pos.coords.longitude, 'GPS'); },
+      function () {},
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  }
+
+  if (tg && tg.LocationManager) {
+    var lm = tg.LocationManager;
+    if (lm.isLocationAvailable && lm.isLocationAvailable()) {
+      lm.getLocation(function (loc) {
+        if (loc) showLocation(loc.latitude, loc.longitude, 'Telegram');
+        else fallbackGeo();
+      });
+      lm.addEventListener('locationChanged', function (loc) {
+        if (loc) showLocation(loc.latitude, loc.longitude, 'Telegram');
+      });
+    } else {
+      fallbackGeo();
+    }
+  } else {
+    fallbackGeo();
+  }
+})();
+</script>
+</body>
+</html>
