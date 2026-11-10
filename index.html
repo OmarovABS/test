@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#f2f2f7">
+<meta name="theme-color" content="#f5f5f7">
 <title>Premium Mini App — меню, корзина, заказы</title>
 <link rel="stylesheet" href="style.css">
 </head>
@@ -19,34 +19,32 @@
 
 <section class="screen" id="menu">
 <h2>Меню</h2>
+<p class="lead">Свежая еда и быстрая доставка — всё, что нужно.</p>
 <div class="chips"><a class="chip" href="#c1">Донар</a><a class="chip" href="#c2">Бургер</a><a class="chip" href="#c3">Хот-дог</a><a class="chip" href="#c4">Напитки</a><a class="chip" href="#c5">Пицца</a></div>
 <h3 id="c1">Донар</h3><div class="grid">
-<div class="p"><div class="img">🌯</div><div class="body"><b>Донар классик</b><small>Говядина, свежие овощи, лаваш</small><span class="price">32 000 сум</span><label for="t-cart" class="btn">Добавить</label></div></div>
-<div class="p"><div class="img">🌯</div><div class="body"><b>Донар куриный</b><small>Курица на гриле, соус, салат</small><span class="price">28 000 сум</span><label for="t-cart" class="btn">Добавить</label></div></div>
-<div class="p"><div class="img">🌯</div><div class="body"><b>Донар XL</b><small>Двойная порция мяса и сыр</small><span class="price">42 000 сум</span><label for="t-cart" class="btn">Добавить</label></div></div></div>
+<div class="p"><div class="img">🌯</div><div class="body"><b>Донар классик</b><small>Говядина, свежие овощи, лаваш</small><span class="price">32 000 сум</span><button type="button" class="btn add">Добавить</button></div></div>
+<div class="p"><div class="img">🌯</div><div class="body"><b>Донар куриный</b><small>Курица на гриле, соус, салат</small><span class="price">28 000 сум</span><button type="button" class="btn add">Добавить</button></div></div>
+<div class="p"><div class="img">🌯</div><div class="body"><b>Донар XL</b><small>Двойная порция мяса и сыр</small><span class="price">42 000 сум</span><button type="button" class="btn add">Добавить</button></div></div></div>
 <h3 id="c2">Бургер</h3><div class="grid">
-<div class="p"><div class="img b">🍔</div><div class="body"><b>Чизбургер</b><small>Говяжья котлета, чеддер, томат</small><span class="price">35 000 сум</span><label for="t-cart" class="btn">Добавить</label></div></div>
-<div class="p"><div class="img b">🍔</div><div class="body"><b>Биг бургер</b><small>Две котлеты, лук, фирменный соус</small><span class="price">48 000 сум</span><label for="t-cart" class="btn">Добавить</label></div></div></div>
+<div class="p"><div class="img b">🍔</div><div class="body"><b>Чизбургер</b><small>Говяжья котлета, чеддер, томат</small><span class="price">35 000 сум</span><button type="button" class="btn add">Добавить</button></div></div>
+<div class="p"><div class="img b">🍔</div><div class="body"><b>Биг бургер</b><small>Две котлеты, лук, фирменный соус</small><span class="price">48 000 сум</span><button type="button" class="btn add">Добавить</button></div></div></div>
 <h3 id="c3">Хот-дог</h3><div class="grid">
-<div class="p"><div class="img h">🌭</div><div class="body"><b>Хот-дог классик</b><small>Сосиска, горчица, булочка бриошь</small><span class="price">18 000 сум</span><label for="t-cart" class="btn">Добавить</label></div></div>
+<div class="p"><div class="img h">🌭</div><div class="body"><b>Хот-дог классик</b><small>Сосиска, горчица, булочка бриошь</small><span class="price">18 000 сум</span><button type="button" class="btn add">Добавить</button></div></div>
 <div class="p off"><div class="img h">🌭</div><div class="body"><b>Хот-дог датский</b><small>Хрустящий лук, огурчики</small><span class="price">22 000 сум</span><span class="btn">Нет в наличии</span></div></div></div>
 <h3 id="c4">Напитки</h3><div class="grid">
-<div class="p"><div class="img n">🍋</div><div class="body"><b>Лимонад</b><small>Лимон, мята, лёд</small><span class="price">15 000 сум</span><label for="t-cart" class="btn">Добавить</label></div></div>
-<div class="p"><div class="img n">🥛</div><div class="body"><b>Айран</b><small>Освежающий, домашний</small><span class="price">9 000 сум</span><label for="t-cart" class="btn">Добавить</label></div></div></div>
+<div class="p"><div class="img n">🍋</div><div class="body"><b>Лимонад</b><small>Лимон, мята, лёд</small><span class="price">15 000 сум</span><button type="button" class="btn add">Добавить</button></div></div>
+<div class="p"><div class="img n">🥛</div><div class="body"><b>Айран</b><small>Освежающий, домашний</small><span class="price">9 000 сум</span><button type="button" class="btn add">Добавить</button></div></div></div>
 <h3 id="c5">Пицца</h3><div class="grid">
-<div class="p"><div class="img z">🍕</div><div class="body"><b>Пепперони</b><small>Пепперони, моцарелла, томатный соус</small><span class="price">75 000 сум</span><label for="t-cart" class="btn">Добавить</label></div></div>
-<div class="p"><div class="img z">🍕</div><div class="body"><b>Маргарита</b><small>Моцарелла, томаты, базилик</small><span class="price">62 000 сум</span><label for="t-cart" class="btn">Добавить</label></div></div></div>
+<div class="p"><div class="img z">🍕</div><div class="body"><b>Пепперони</b><small>Пепперони, моцарелла, томатный соус</small><span class="price">75 000 сум</span><button type="button" class="btn add">Добавить</button></div></div>
+<div class="p"><div class="img z">🍕</div><div class="body"><b>Маргарита</b><small>Моцарелла, томаты, базилик</small><span class="price">62 000 сум</span><button type="button" class="btn add">Добавить</button></div></div></div>
 </section>
 
 <section class="screen" id="cart">
 <h2>Корзина</h2>
-<div class="list">
-<div class="row"><div class="img thumb">🌯</div><div class="grow"><b>Донар классик</b><small>Острый · Сыр</small><small>37 000 сум</small></div><div class="qty"><span>−</span>2<span>+</span></div></div>
-<div class="row"><div class="img n thumb">🍋</div><div class="grow"><b>Лимонад</b><small>0.7 л</small><small>20 000 сум</small></div><div class="qty"><span>−</span>1<span>+</span></div></div>
-</div>
+<div class="list" id="cart-list"></div>
 <h3>Итого</h3>
-<div class="list sum"><div class="row"><span>Подытог</span><span>94 000 сум</span></div><div class="row"><span>Доставка</span><span>10 000 сум</span></div><div class="row t"><span>Итого</span><span>104 000 сум</span></div></div>
-<br><label for="t-orders" class="btn main">Оформить заказ</label>
+<div class="list sum"><div class="row"><span>Подытог</span><span id="cart-sub">0 сум</span></div><div class="row"><span>Доставка</span><span id="cart-delivery">0 сум</span></div><div class="row t"><span>Итого</span><span id="cart-total">0 сум</span></div></div>
+<br><button type="button" class="btn main" id="checkout" disabled>Оформить заказ</button>
 </section>
 
 <section class="screen" id="orders">
@@ -54,7 +52,7 @@
 <div class="track"><div style="display:flex;justify-content:space-between"><b>Активный заказ #1042</b><span class="badge s3">В пути</span></div>
 <div class="steps"><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div>
 <small class="muted">Курьер Азиз · Донар классик ×2, Лимонад ×1</small></div>
-<div class="list">
+<div class="list" id="orders-list">
 <div class="row"><div class="grow"><b>#1042 · 89 000 сум</b><small>09.11.2026, 18:40</small></div><span class="badge s3">В пути</span></div>
 <div class="row"><div class="grow"><b>#1035 · 85 000 сум</b><small>05.11.2026, 13:12 · Пепперони ×1</small></div><span class="badge s4">Доставлен</span></div>
 <div class="row"><div class="grow"><b>#1021 · 98 000 сум</b><small>28.10.2026, 20:05 · Чизбургер ×2, Айран ×2</small></div><span class="badge s4">Доставлен</span></div>
@@ -103,8 +101,8 @@
   if (tg) {
     tg.ready();
     tg.expand();
-    if (tg.setHeaderColor) tg.setHeaderColor('#f2f2f7');
-    if (tg.setBackgroundColor) tg.setBackgroundColor('#f2f2f7');
+    if (tg.setHeaderColor) tg.setHeaderColor('#f5f5f7');
+    if (tg.setBackgroundColor) tg.setBackgroundColor('#f5f5f7');
   }
 
   function showLocation(lat, lon, source) {
@@ -143,6 +141,264 @@
   } else {
     fallbackGeo();
   }
+})();
+</script>
+<script>
+(function () {
+  var STORAGE_KEY = 'pf_cart';
+  var DELIVERY = 10000;
+  var cart = {};
+  var nextOrder = 1045;
+
+  try {
+    var raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) cart = JSON.parse(raw) || {};
+  } catch (e) { cart = {}; }
+
+  var listEl = document.getElementById('cart-list');
+  var subEl = document.getElementById('cart-sub');
+  var delEl = document.getElementById('cart-delivery');
+  var totEl = document.getElementById('cart-total');
+  var checkout = document.getElementById('checkout');
+  var badge = document.querySelector('nav .cnt');
+  var addButtons = document.querySelectorAll('.btn.add');
+
+  function save() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(cart)); } catch (e) {}
+  }
+  function fmt(n) {
+    return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' сум';
+  }
+  function subtotal() {
+    var s = 0;
+    for (var k in cart) if (cart.hasOwnProperty(k)) s += cart[k].price * cart[k].qty;
+    return s;
+  }
+  function count() {
+    var s = 0;
+    for (var k in cart) if (cart.hasOwnProperty(k)) s += cart[k].qty;
+    return s;
+  }
+
+  function productName(card) {
+    var b = card.querySelector('.body > b');
+    return b ? b.textContent.trim() : '';
+  }
+
+  function syncButtons() {
+    Array.prototype.forEach.call(addButtons, function (btn) {
+      var card = btn.closest('.p');
+      if (!card) return;
+      if (cart[productName(card)]) {
+        btn.classList.add('done');
+        btn.setAttribute('aria-label', 'Добавлено');
+      } else {
+        btn.classList.remove('done');
+        btn.removeAttribute('aria-label');
+      }
+    });
+  }
+
+  function makeRow(item) {
+    var row = document.createElement('div');
+    row.className = 'row';
+    row.setAttribute('data-name', item.name);
+
+    var img = document.createElement('div');
+    img.className = 'img thumb';
+    img.textContent = item.emoji;
+
+    var grow = document.createElement('div');
+    grow.className = 'grow';
+    var b = document.createElement('b');
+    b.textContent = item.name;
+    var small = document.createElement('small');
+    small.textContent = fmt(item.price) + ' × ' + item.qty + ' = ' + fmt(item.price * item.qty);
+    grow.appendChild(b);
+    grow.appendChild(small);
+
+    var qty = document.createElement('div');
+    qty.className = 'qty';
+    var dec = document.createElement('span');
+    dec.setAttribute('data-act', 'dec');
+    dec.textContent = '−';
+    var val = document.createElement('b');
+    val.textContent = item.qty;
+    var inc = document.createElement('span');
+    inc.setAttribute('data-act', 'inc');
+    inc.textContent = '+';
+    qty.appendChild(dec);
+    qty.appendChild(val);
+    qty.appendChild(inc);
+
+    row.appendChild(img);
+    row.appendChild(grow);
+    row.appendChild(qty);
+    return row;
+  }
+
+  function render() {
+    listEl.innerHTML = '';
+    var keys = [];
+    for (var k in cart) if (cart.hasOwnProperty(k)) keys.push(k);
+
+    if (keys.length === 0) {
+      var empty = document.createElement('div');
+      empty.className = 'row';
+      var grow = document.createElement('div');
+      grow.className = 'grow';
+      var title = document.createElement('span');
+      title.className = 'muted';
+      title.textContent = 'Корзина пуста';
+      var hint = document.createElement('small');
+      hint.textContent = 'Добавьте блюда из меню';
+      grow.appendChild(title);
+      grow.appendChild(hint);
+      empty.appendChild(grow);
+      listEl.appendChild(empty);
+    } else {
+      keys.forEach(function (name) { listEl.appendChild(makeRow(cart[name])); });
+    }
+
+    var sub = subtotal();
+    var delivery = keys.length ? DELIVERY : 0;
+    subEl.textContent = fmt(sub);
+    delEl.textContent = fmt(delivery);
+    totEl.textContent = fmt(sub + delivery);
+    checkout.disabled = keys.length === 0;
+
+    if (badge) {
+      var c = count();
+      badge.textContent = c;
+      badge.style.display = c ? '' : 'none';
+    }
+
+    syncButtons();
+  }
+
+  Array.prototype.forEach.call(addButtons, function (btn) {
+    btn.addEventListener('click', function () {
+      var card = btn.closest('.p');
+      if (!card) return;
+      var name = productName(card);
+      var priceEl = card.querySelector('.price');
+      var imgEl = card.querySelector('.img');
+      var price = priceEl ? parseInt(priceEl.textContent.replace(/[^0-9]/g, ''), 10) || 0 : 0;
+      var emoji = imgEl ? imgEl.textContent.trim() : '🍽';
+      if (cart[name]) cart[name].qty += 1;
+      else cart[name] = { name: name, price: price, emoji: emoji, qty: 1 };
+      save();
+      render();
+    });
+  });
+
+  listEl.addEventListener('click', function (e) {
+    var target = e.target.closest('[data-act]');
+    if (!target) return;
+    var row = target.closest('.row');
+    var name = row ? row.getAttribute('data-name') : '';
+    if (!name || !cart[name]) return;
+    if (target.getAttribute('data-act') === 'inc') {
+      cart[name].qty += 1;
+    } else {
+      cart[name].qty -= 1;
+      if (cart[name].qty <= 0) delete cart[name];
+    }
+    save();
+    render();
+  });
+
+  checkout.addEventListener('click', function () {
+    if (count() === 0) return;
+    var orderList = document.getElementById('orders-list');
+    if (orderList) {
+      var d = new Date();
+      var when = d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' }) +
+        ', ' + d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+      var names = [];
+      for (var k in cart) {
+        if (cart.hasOwnProperty(k)) names.push(cart[k].name + ' ×' + cart[k].qty);
+      }
+      var total = subtotal() + DELIVERY;
+
+      var row = document.createElement('div');
+      row.className = 'row';
+      var grow = document.createElement('div');
+      grow.className = 'grow';
+      var b = document.createElement('b');
+      b.textContent = '#' + nextOrder + ' · ' + fmt(total);
+      var small = document.createElement('small');
+      small.textContent = when + ' · ' + names.join(', ');
+      grow.appendChild(b);
+      grow.appendChild(small);
+      var status = document.createElement('span');
+      status.className = 'badge s1';
+      status.textContent = 'Принят';
+      row.appendChild(grow);
+      row.appendChild(status);
+      orderList.insertBefore(row, orderList.firstChild);
+      nextOrder += 1;
+    }
+
+    cart = {};
+    save();
+    render();
+    document.getElementById('t-orders').checked = true;
+  });
+
+  render();
+})();
+</script>
+<script>
+(function () {
+  var menu = document.getElementById('menu');
+  var chipsBar = document.querySelector('.chips');
+  var chips = chipsBar ? chipsBar.querySelectorAll('.chip') : [];
+  var headings = menu ? menu.querySelectorAll('h3[id]') : [];
+  var lockedUntil = 0;
+
+  function setActive(id) {
+    Array.prototype.forEach.call(chips, function (chip) {
+      chip.classList.toggle('active', chip.getAttribute('href') === '#' + id);
+    });
+  }
+
+  function updateActive() {
+    if (!menu || !chips.length || !headings.length) return;
+    if (getComputedStyle(menu).display === 'none') return;
+    if (Date.now() < lockedUntil) return;
+    var header = document.querySelector('header');
+    var offset = header.offsetHeight + chipsBar.offsetHeight + 12;
+    var current = headings[0].id;
+    Array.prototype.forEach.call(headings, function (h) {
+      if (h.getBoundingClientRect().top <= offset) current = h.id;
+    });
+    setActive(current);
+  }
+
+  var ticking = false;
+  window.addEventListener('scroll', function () {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(function () { updateActive(); ticking = false; });
+  }, { passive: true });
+
+  Array.prototype.forEach.call(chips, function (chip) {
+    chip.addEventListener('click', function () {
+      var id = (chip.getAttribute('href') || '').replace('#', '');
+      if (!id) return;
+      setActive(id);
+      lockedUntil = Date.now() + 900;
+      try { chip.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' }); } catch (e) {}
+      setTimeout(updateActive, 950);
+    });
+  });
+
+  var menuRadio = document.getElementById('t-menu');
+  if (menuRadio) menuRadio.addEventListener('change', function () { setTimeout(updateActive, 60); });
+
+  window.addEventListener('resize', updateActive);
+  updateActive();
 })();
 </script>
 </body>
