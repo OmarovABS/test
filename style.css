@@ -286,4 +286,17 @@ nav label svg{width:26px;height:26px;stroke:currentColor;fill:none;stroke-width:
 nav label:active svg{transform:scale(.9)}
 nav .cnt{position:absolute;top:-3px;right:13px;background:var(--danger);color:#fff;font-size:10px;font-weight:600;border-radius:999px;min-width:16px;height:16px;display:grid;place-items:center;padding:0 4px;border:2px solid var(--bg)}
 #t-menu:checked~.app [for=t-menu],#t-cart:checked~.app [for=t-cart],#t-orders:checked~.app [for=t-orders],#t-profile:checked~.app [for=t-profile],#t-admin:checked~.app [for=t-admin]{color:var(--primary);font-weight:600}
+.adm-only{display:none!important}
+.adm-seg{display:flex;flex-wrap:wrap;gap:2px;background:var(--sec);border-radius:10px;padding:2px}
+.adm-seg span{padding:5px 9px;border-radius:8px;font-size:11px;font-weight:500;color:var(--muted);cursor:pointer;transition:background .2s,color .2s;white-space:nowrap}
+.adm-seg span.sel{background:var(--card);color:var(--fg);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.mini-btn{
+  border:0;background:var(--sec);color:var(--primary);border-radius:999px;
+  padding:7px 13px;font:inherit;font-size:12px;font-weight:600;cursor:pointer;flex:none;
+  transition:background .2s,transform .12s;
+}
+.mini-btn:active{transform:scale(.95)}
+.mini-btn.danger{color:var(--danger)}
+.adm-thumb{width:44px;height:44px;border-radius:12px;object-fit:cover;flex:none}
+.adm-order .grow small{white-space:normal}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
