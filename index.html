@@ -15,7 +15,14 @@
 <input type="radio" name="tab" id="t-admin">
 <input type="checkbox" class="hide" id="dark">
 <div class="app">
-<header><h1>Premium Food</h1><label for="dark" class="theme" title="Тема"></label></header>
+<header>
+<div class="head-top"><h1>Premium Food</h1><label for="dark" class="theme" title="Тема"></label></div>
+<button type="button" class="loc" id="locBtn" title="Изменить местоположение">
+<span class="loc-icon"><svg viewBox="0 0 24 24"><path d="M12 21s-6.5-5.5-6.5-10a6.5 6.5 0 0 1 13 0c0 4.5-6.5 10-6.5 10Z"/><circle cx="12" cy="11" r="2.5"/></svg></span>
+<span class="loc-text" id="locText">Указать местоположение</span>
+<span class="chev"></span>
+</button>
+</header>
 
 <section class="screen" id="menu">
 <div class="banner" id="banner">
@@ -70,7 +77,7 @@
 <div class="stats"><div class="stat"><small class="muted">Число заказов</small><b>3</b></div><div class="stat"><small class="muted">Сумма всего заказов</small><b>272 000 сум</b></div></div>
 <h3>Настройки</h3>
 <div class="list">
-<div class="row"><div class="grow">📍 Сохраненный адрес<small>Ташкент, ул. Амира Темура, 15</small></div><span class="chev"></span></div>
+<div class="row" id="addrRow"><div class="grow">📍 Сохраненный адрес<small>Ташкент, ул. Амира Темура, 15</small></div><span class="chev"></span></div>
 <div class="row"><div class="grow">🌐 Язык</div><div class="seg"><span>RU</span><span>UZ</span><span>EN</span></div></div>
 <label class="row" for="dark" style="cursor:pointer"><div class="grow">🌓 Тёмная тема</div><span class="chev"></span></label>
 <div class="row"><div class="grow">💬 Служба поддержки</div><span class="chev"></span></div>
@@ -111,41 +118,100 @@
     if (tg.setBackgroundColor) tg.setBackgroundColor('#f5f5f7');
   }
 
+  var locText = document.getElementById('locText');
+  var locBtn = document.getElementById('locBtn');
+  var addrRow = document.getElementById('addrRow');
+  var addrSmall = document.querySelector('#addrRow .grow small');
+
+  function paintLocation(text) {
+    if (locText) locText.textContent = text;
+    if (addrSmall) addrSmall.textContent = text;
+  }
+
   function showLocation(lat, lon, source) {
-    var addr = document.querySelector('#profile .row .grow small');
-    if (addr) {
-      addr.textContent = lat.toFixed(5) + ', ' + lon.toFixed(5) + ' (' + source + ')';
-    }
+    paintLocation(lat.toFixed(5) + ', ' + lon.toFixed(5));
     try {
       localStorage.setItem('pf_location', JSON.stringify({ lat: lat, lon: lon, ts: Date.now() }));
     } catch (e) {}
     console.log('Location:', lat, lon, source);
   }
 
-  function fallbackGeo() {
-    if (!navigator.geolocation) return;
+  function restoreLocation() {
+    try {
+      var saved = JSON.parse(localStorage.getItem('pf_location') || 'null');
+      if (!saved) return false;
+      if (saved.text) {
+        paintLocation(saved.text);
+        return true;
+      }
+      if (typeof saved.lat === 'number' && typeof saved.lon === 'number') {
+        paintLocation(saved.lat.toFixed(5) + ', ' + saved.lon.toFixed(5));
+        return true;
+      }
+    } catch (e) {}
+    return false;
+  }
+
+  function restorePrev(prev) {
+    paintLocation(prev || 'Указать местоположение');
+  }
+
+  function askManual(prev) {
+    var value = window.prompt('Введите адрес доставки', '');
+    if (!value) {
+      restorePrev(prev);
+      return;
+    }
+    var text = value.trim();
+    if (!text) {
+      restorePrev(prev);
+      return;
+    }
+    paintLocation(text);
+    try {
+      localStorage.setItem('pf_location', JSON.stringify({ text: text, ts: Date.now() }));
+    } catch (e) {}
+  }
+
+  function fallbackGeo(manual, prev) {
+    if (!navigator.geolocation) {
+      if (manual) askManual(prev);
+      else restorePrev(prev);
+      return;
+    }
     navigator.geolocation.getCurrentPosition(
       function (pos) { showLocation(pos.coords.latitude, pos.coords.longitude, 'GPS'); },
-      function () {},
-      { enableHighAccuracy: true, timeout: 10000 }
+      function () {
+        if (manual) askManual(prev);
+        else restorePrev(prev);
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
   }
 
-  if (tg && tg.LocationManager) {
-    var lm = tg.LocationManager;
-    if (lm.isLocationAvailable && lm.isLocationAvailable()) {
+  function requestLocation(manual) {
+    var prev = locText ? locText.textContent : '';
+    if (locText) locText.textContent = 'Определяем местоположение…';
+    var lm = tg && tg.LocationManager;
+    if (lm && lm.isLocationAvailable && lm.isLocationAvailable()) {
       lm.getLocation(function (loc) {
         if (loc) showLocation(loc.latitude, loc.longitude, 'Telegram');
-        else fallbackGeo();
-      });
-      lm.addEventListener('locationChanged', function (loc) {
-        if (loc) showLocation(loc.latitude, loc.longitude, 'Telegram');
+        else fallbackGeo(manual, prev);
       });
     } else {
-      fallbackGeo();
+      fallbackGeo(manual, prev);
     }
-  } else {
-    fallbackGeo();
+  }
+
+  if (locBtn) locBtn.addEventListener('click', function () { requestLocation(true); });
+  if (addrRow) addrRow.addEventListener('click', function () { requestLocation(true); });
+
+  if (!restoreLocation()) requestLocation(false);
+
+  if (tg && tg.LocationManager && tg.LocationManager.addEventListener) {
+    tg.LocationManager.addEventListener('locationChanged', function (loc) {
+      if (loc) showLocation(loc.latitude, loc.longitude, 'Telegram');
+    });
   }
 })();
 </script>
@@ -373,6 +439,11 @@
     return header.offsetHeight + chipsBar.offsetHeight;
   }
 
+  function syncSticky() {
+    var header = document.querySelector('header');
+    document.documentElement.style.setProperty('--header-h', header.offsetHeight + 'px');
+  }
+
   function syncScrollMargins() {
     if (!menu || getComputedStyle(menu).display === 'none') return;
     var margin = stickyBottom() + 12;
@@ -437,15 +508,18 @@
 
   var menuRadio = document.getElementById('t-menu');
   if (menuRadio) menuRadio.addEventListener('change', function () {
+    syncSticky();
     syncScrollMargins();
     setTimeout(updateActive, 60);
   });
 
   window.addEventListener('resize', function () {
+    syncSticky();
     syncScrollMargins();
     updateActive();
   });
 
+  syncSticky();
   syncScrollMargins();
   updateActive();
 })();
