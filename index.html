@@ -602,12 +602,16 @@
   }
 
   var tgUser = tg && tg.initDataUnsafe && tg.initDataUnsafe.user;
+  var userId = tgUser && tgUser.id ? String(tgUser.id) : 'guest';
+  var nameKey = 'pf_name_' + userId;
+  var langKey = 'pf_lang_' + userId;
+
   if (tgUser && (tgUser.first_name || tgUser.username)) {
     setProfileName(tgUser.first_name || tgUser.username);
     if (userEl) userEl.textContent = tgUser.username ? '@' + tgUser.username : '';
   }
   try {
-    var savedName = localStorage.getItem('pf_name');
+    var savedName = localStorage.getItem(nameKey);
     if (savedName) setProfileName(savedName);
   } catch (e) {}
 
@@ -617,7 +621,7 @@
     var value = window.prompt('Ваше имя', current);
     if (value && value.trim()) {
       setProfileName(value.trim());
-      try { localStorage.setItem('pf_name', value.trim()); } catch (e) {}
+      try { localStorage.setItem(nameKey, value.trim()); } catch (e) {}
     }
   });
 
@@ -626,11 +630,11 @@
     span.addEventListener('click', function () {
       Array.prototype.forEach.call(segSpans, function (s) { s.classList.remove('sel'); });
       span.classList.add('sel');
-      try { localStorage.setItem('pf_lang', span.textContent.trim()); } catch (e) {}
+      try { localStorage.setItem(langKey, span.textContent.trim()); } catch (e) {}
     });
   });
   try {
-    var savedLang = localStorage.getItem('pf_lang');
+    var savedLang = localStorage.getItem(langKey);
     if (savedLang) {
       Array.prototype.forEach.call(segSpans, function (s) {
         s.classList.toggle('sel', s.textContent.trim() === savedLang);
