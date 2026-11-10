@@ -78,7 +78,13 @@ header h1{font-size:21px;font-weight:600;letter-spacing:-.025em}
 h2{font-size:40px;font-weight:700;letter-spacing:-.04em;line-height:1.05;margin:14px 0 6px}
 .lead{color:var(--muted);font-size:17px;line-height:1.45;margin:0 0 18px;letter-spacing:-.01em;max-width:34ch}
 h3[id]{scroll-margin-top:132px}
-.banner{display:block;width:100%;height:auto;aspect-ratio:5/2;object-fit:cover;margin:0 0 18px;border-radius:16px;box-shadow:var(--shadow)}
+.banner{position:relative;width:100%;aspect-ratio:5/2;overflow:hidden;margin:0 0 18px;border-radius:16px;box-shadow:var(--shadow);background:var(--sec);touch-action:pan-y}
+.banner-track{display:flex;height:100%;transition:transform .55s cubic-bezier(.22,.8,.24,1);will-change:transform}
+.banner-slide{flex:0 0 100%;height:100%}
+.banner-slide img{display:block;width:100%;height:100%;object-fit:cover}
+.banner-dots{position:absolute;left:0;right:0;bottom:10px;display:flex;justify-content:center;gap:6px}
+.banner-dots span{width:6px;height:6px;border-radius:50%;background:rgba(29,29,31,.25);box-shadow:0 0 0 1px rgba(255,255,255,.5);cursor:pointer;transition:background .25s,transform .25s}
+.banner-dots span.on{background:#1d1d1f;transform:scale(1.25)}
 h3{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600;margin:30px 2px 12px}
 .chips{
   position:sticky;top:64px;z-index:15;

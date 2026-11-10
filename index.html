@@ -18,7 +18,14 @@
 <header><h1>Premium Food</h1><label for="dark" class="theme" title="Тема"></label></header>
 
 <section class="screen" id="menu">
-<img class="banner" src="banner.jpg" alt="Premium Food — доставка еды">
+<div class="banner" id="banner">
+<div class="banner-track">
+<div class="banner-slide"><img src="banner.jpg" alt="Premium Food — доставка еды"></div>
+<div class="banner-slide"><img src="banner2.jpg" alt=""></div>
+<div class="banner-slide"><img src="banner3.jpg" alt=""></div>
+</div>
+<div class="banner-dots" aria-hidden="true"><span class="on"></span><span></span><span></span></div>
+</div>
 <div class="chips"><a class="chip" href="#c1">Донар</a><a class="chip" href="#c2">Бургер</a><a class="chip" href="#c3">Хот-дог</a><a class="chip" href="#c4">Напитки</a><a class="chip" href="#c5">Пицца</a></div>
 <h3 id="c1">Донар</h3><div class="grid">
 <div class="p"><div class="img">🌯</div><div class="body"><b>Донар классик</b><small>Говядина, свежие овощи, лаваш</small><span class="price">32 000 сум</span><button type="button" class="btn add">Добавить</button></div></div>
@@ -398,6 +405,63 @@
 
   window.addEventListener('resize', updateActive);
   updateActive();
+})();
+</script>
+<script>
+(function () {
+  var banner = document.getElementById('banner');
+  if (!banner) return;
+  var track = banner.querySelector('.banner-track');
+  var slides = track.children;
+  var dots = banner.querySelectorAll('.banner-dots span');
+  var total = slides.length;
+  var index = 0;
+  var timer = null;
+  var DELAY = 4000;
+
+  function show(n) {
+    index = (n + total) % total;
+    track.style.transform = 'translateX(' + (-index * 100) + '%)';
+    Array.prototype.forEach.call(dots, function (dot, i) {
+      dot.classList.toggle('on', i === index);
+    });
+  }
+  function start() {
+    stop();
+    if (total > 1) timer = setInterval(function () { show(index + 1); }, DELAY);
+  }
+  function stop() {
+    if (timer) { clearInterval(timer); timer = null; }
+  }
+
+  var startX = null;
+  banner.addEventListener('touchstart', function (e) {
+    startX = e.touches[0].clientX;
+    stop();
+  }, { passive: true });
+  banner.addEventListener('touchend', function (e) {
+    if (startX === null) return;
+    var dx = e.changedTouches[0].clientX - startX;
+    startX = null;
+    if (Math.abs(dx) > 40) {
+      show(index + (dx < 0 ? 1 : -1));
+    }
+    start();
+  });
+
+  Array.prototype.forEach.call(dots, function (dot, i) {
+    dot.addEventListener('click', function () {
+      show(i);
+      start();
+    });
+  });
+
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) stop(); else start();
+  });
+
+  show(0);
+  start();
 })();
 </script>
 </body>
