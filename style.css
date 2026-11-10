@@ -99,9 +99,7 @@ h3[id]{scroll-margin-top:170px}
 .banner-dots{position:absolute;left:0;right:0;bottom:10px;display:flex;justify-content:center;gap:6px}
 .banner-dots span{width:6px;height:6px;border-radius:50%;background:rgba(29,29,31,.25);box-shadow:0 0 0 1px rgba(255,255,255,.5);cursor:pointer;transition:background .25s,transform .25s}
 .banner-dots span.on{background:#1d1d1f;transform:scale(1.25)}
-h3{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600;margin:30px 2px 12px}
-h3[id]::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:8px;vertical-align:middle;background:var(--accent,var(--primary));box-shadow:0 0 0 3px rgba(0,0,0,.04)}
-#c1{--accent:#ff9500}#c2{--accent:#ff3b30}#c3{--accent:#ffcc00}#c4{--accent:#0071e3}#c5{--accent:#34c759}
+h3{display:inline-flex;align-items:center;font-size:14px;font-weight:500;color:var(--fg);padding:10px 16px;border-radius:999px;background:var(--card);border:.5px solid var(--border);margin:30px 2px 12px}
 .chips{
   position:sticky;top:var(--header-h,100px);z-index:15;
   display:flex;gap:8px;overflow-x:auto;
@@ -113,18 +111,12 @@ h3[id]::before{content:"";display:inline-block;width:8px;height:8px;border-radiu
 }
 .chips::-webkit-scrollbar{display:none}
 .chip{
-  flex:none;display:inline-flex;align-items:center;gap:8px;
+  flex:none;display:inline-flex;align-items:center;
   padding:10px 16px;border-radius:999px;
   background:var(--card);font-size:14px;font-weight:500;color:var(--fg);
   text-decoration:none;border:.5px solid var(--border);
   transition:background .2s,color .2s,transform .12s;
 }
-.chip::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--dot,var(--primary));flex:none}
-.chip:nth-child(1){--dot:#ff9500}
-.chip:nth-child(2){--dot:#ff3b30}
-.chip:nth-child(3){--dot:#ffcc00}
-.chip:nth-child(4){--dot:#0071e3}
-.chip:nth-child(5){--dot:#34c759}
 .chip:active{transform:scale(.96)}
 .chip.active{background:#1d1d1f;color:#fff;border-color:transparent}
 #dark:checked~.app .chip.active{background:#f5f5f7;color:#1d1d1f}
