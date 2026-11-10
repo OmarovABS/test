@@ -261,7 +261,8 @@ h3{display:inline-flex;align-items:center;font-size:14px;font-weight:500;color:v
 #admin .stat:nth-child(2) b{color:var(--ok)}
 .seg{display:flex;background:var(--sec);border-radius:10px;padding:2px;gap:2px}
 .seg span{padding:6px 13px;border-radius:8px;font-size:13px;font-weight:500;color:var(--muted);transition:background .2s,color .2s}
-.seg span:first-child{background:var(--card);color:var(--fg);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.seg span:first-child,.seg span.sel{background:var(--card);color:var(--fg);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.12);cursor:pointer}
+.seg span{cursor:pointer}
 .chev::after{content:"›";color:var(--muted);font-size:22px;line-height:1}
 select,input.f{background:var(--sec);color:var(--fg);border:0;border-radius:10px;padding:8px 12px;font:inherit;font-size:13px;-webkit-appearance:none;appearance:none}
 .switch{width:51px;height:31px;border-radius:999px;background:var(--ok);position:relative;flex:none;transition:background .2s}

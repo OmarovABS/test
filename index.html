@@ -90,7 +90,7 @@
 </div>
 <h3>Поддержка</h3>
 <div class="list">
-<div class="row"><span class="ico i-green"><svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-8 8H4l2-3a8 8 0 1 1 15-5Z"/><path d="M8.5 11h.01M12 11h.01M15.5 11h.01"/></svg></span><div class="grow">Служба поддержки</div><span class="chev"></span></div>
+<div class="row" id="supportRow"><span class="ico i-green"><svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-8 8H4l2-3a8 8 0 1 1 15-5Z"/><path d="M8.5 11h.01M12 11h.01M15.5 11h.01"/></svg></span><div class="grow">Служба поддержки</div><span class="chev"></span></div>
 </div>
 <button type="button" class="btn prof-logout">Выйти</button>
 </section>
@@ -584,6 +584,80 @@
 
   show(0);
   start();
+})();
+</script>
+<script>
+(function () {
+  var tg = window.Telegram && window.Telegram.WebApp;
+  var SUPPORT_USERNAME = ''; // укажите username поддержки, например 'support_bot'
+
+  var nameEl = document.querySelector('.prof-name');
+  var userEl = document.querySelector('.prof-username');
+  var avatarEl = document.querySelector('.prof-avatar');
+
+  function setProfileName(name) {
+    if (!nameEl || !name) return;
+    nameEl.textContent = name;
+    if (avatarEl) avatarEl.textContent = name.trim().charAt(0).toUpperCase();
+  }
+
+  var tgUser = tg && tg.initDataUnsafe && tg.initDataUnsafe.user;
+  if (tgUser && (tgUser.first_name || tgUser.username)) {
+    setProfileName(tgUser.first_name || tgUser.username);
+    if (userEl) userEl.textContent = tgUser.username ? '@' + tgUser.username : '';
+  }
+  try {
+    var savedName = localStorage.getItem('pf_name');
+    if (savedName) setProfileName(savedName);
+  } catch (e) {}
+
+  var editBtn = document.querySelector('.prof-edit');
+  if (editBtn) editBtn.addEventListener('click', function () {
+    var current = nameEl ? nameEl.textContent : '';
+    var value = window.prompt('Ваше имя', current);
+    if (value && value.trim()) {
+      setProfileName(value.trim());
+      try { localStorage.setItem('pf_name', value.trim()); } catch (e) {}
+    }
+  });
+
+  var segSpans = document.querySelectorAll('#profile .seg span');
+  Array.prototype.forEach.call(segSpans, function (span) {
+    span.addEventListener('click', function () {
+      Array.prototype.forEach.call(segSpans, function (s) { s.classList.remove('sel'); });
+      span.classList.add('sel');
+      try { localStorage.setItem('pf_lang', span.textContent.trim()); } catch (e) {}
+    });
+  });
+  try {
+    var savedLang = localStorage.getItem('pf_lang');
+    if (savedLang) {
+      Array.prototype.forEach.call(segSpans, function (s) {
+        s.classList.toggle('sel', s.textContent.trim() === savedLang);
+      });
+    }
+  } catch (e) {}
+
+  var supportRow = document.getElementById('supportRow');
+  if (supportRow) supportRow.addEventListener('click', function () {
+    if (tg && tg.openTelegramLink && SUPPORT_USERNAME) {
+      tg.openTelegramLink('https://t.me/' + SUPPORT_USERNAME);
+    } else if (tg && tg.openLink) {
+      tg.openLink('https://t.me/');
+    } else {
+      window.alert('Служба поддержки на связи ежедневно с 10:00 до 23:00.');
+    }
+  });
+
+  var logoutBtn = document.querySelector('.prof-logout');
+  if (logoutBtn) logoutBtn.addEventListener('click', function () {
+    if (!window.confirm('Выйти из аккаунта?')) return;
+    if (tg && tg.close) {
+      tg.close();
+    } else {
+      document.getElementById('t-menu').checked = true;
+    }
+  });
 })();
 </script>
 </body>
