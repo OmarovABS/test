@@ -97,6 +97,14 @@ def init_db() -> None:
             )
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_orders_created_at ON orders(created_at);")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_products_active_category ON products(is_active, category);")
+            cursor.execute(
+                """
+                CREATE TABLE IF NOT EXISTS app_meta (
+                    key TEXT PRIMARY KEY,
+                    value TEXT NOT NULL
+                );
+                """
+            )
             
             cursor.execute("SELECT COUNT(*) FROM products")
             count = cursor.fetchone()["count"]
@@ -132,6 +140,10 @@ def init_db() -> None:
                 );
                 CREATE INDEX IF NOT EXISTS idx_orders_created_at ON orders(created_at);
                 CREATE INDEX IF NOT EXISTS idx_products_active_category ON products(is_active, category);
+                CREATE TABLE IF NOT EXISTS app_meta (
+                    key TEXT PRIMARY KEY,
+                    value TEXT NOT NULL
+                );
                 """
             )
             count = connection.execute("SELECT COUNT(*) FROM products").fetchone()[0]

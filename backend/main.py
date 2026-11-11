@@ -15,7 +15,7 @@ from zoneinfo import ZoneInfo
 import httpx
 from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, Request, UploadFile
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
@@ -42,9 +42,63 @@ MAX_UPLOAD_BYTES = 8 * 1024 * 1024
 ALLOWED_IMAGE_TYPES = {"image/jpeg": ".jpg", "image/png": ".png", "image/webp": ".webp", "image/gif": ".gif"}
 LOCAL_HOSTS = {"127.0.0.1", "::1", "localhost", "testclient"}
 
+
+class MenuCache:
+    """In-memory snapshot of the storefront menu served without touching SQLite."""
+
+    def __init__(self) -> None:
+        self.version = 1
+        self.products: list[dict[str, Any]] = []
+
+
+menu_cache = MenuCache()
+
+
+def _load_menu_version() -> int:
+    try:
+        with connect_db() as connection:
+            row = connection.execute(
+                "SELECT value FROM app_meta WHERE key='menu_version'"
+            ).fetchone()
+        return int(row["value"]) if row else 1
+    except Exception:
+        return 1
+
+
+def _store_menu_version(version: int) -> None:
+    try:
+        with connect_db() as connection:
+            connection.execute(
+                "INSERT INTO app_meta(key, value) VALUES('menu_version', ?) "
+                "ON CONFLICT(key) DO UPDATE SET value=excluded.value",
+                (str(version),),
+            )
+    except Exception as error:
+        print(f"Failed to persist menu version: {error}")
+
+
+def refresh_menu_cache() -> None:
+    with connect_db() as connection:
+        rows = connection.execute(
+            "SELECT id, name, description, price, category, image_url FROM products WHERE is_active=1 ORDER BY category, id"
+        ).fetchall()
+    products = [product_payload(row) for row in rows]
+    for product in products:
+        product["image_url"] = public_image_url(product["image_url"])
+    menu_cache.products = products
+
+
+def bump_menu_version() -> None:
+    refresh_menu_cache()
+    menu_cache.version += 1
+    _store_menu_version(menu_cache.version)
+
+
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
     init_db()
+    menu_cache.version = _load_menu_version()
+    refresh_menu_cache()
     yield
 
 
@@ -168,15 +222,19 @@ def get_me(request: Request, x_telegram_init_data: Annotated[str | None, Header(
 
 
 @app.get("/api/menu")
-def get_menu() -> dict[str, list[dict[str, Any]]]:
-    with connect_db() as connection:
-        rows = connection.execute(
-            "SELECT id, name, description, price, category, image_url FROM products WHERE is_active=1 ORDER BY category, id"
-        ).fetchall()
-    products = [product_payload(row) for row in rows]
-    for product in products:
-        product["image_url"] = public_image_url(product["image_url"])
-    return {"products": products}
+def get_menu() -> JSONResponse:
+    return JSONResponse(
+        {"products": menu_cache.products, "version": menu_cache.version},
+        headers={"Cache-Control": "no-store, no-cache, must-revalidate"},
+    )
+
+
+@app.get("/api/menu/version")
+def get_menu_version() -> JSONResponse:
+    return JSONResponse(
+        {"version": menu_cache.version},
+        headers={"Cache-Control": "no-store"},
+    )
 
 
 @app.post("/api/orders", status_code=201)
@@ -267,8 +325,10 @@ async def create_product(
 ) -> dict[str, Any]:
     uploaded = await persist_upload(image)
     chosen_image = uploaded or validate_remote_image(image_url)
-    return {"product": save_product(product_id=None, name=name, description=description, price=price,
-                                     category=category, image_url=chosen_image, is_active=is_active)}
+    product = save_product(product_id=None, name=name, description=description, price=price,
+                           category=category, image_url=chosen_image, is_active=is_active)
+    bump_menu_version()
+    return {"product": product}
 
 
 @app.put("/api/admin/products/{product_id}")
@@ -311,10 +371,12 @@ async def update_product(
         data.update(patch.model_dump(exclude_unset=True))
         if "image_url" in patch.model_fields_set:
             data["image_url"] = validate_remote_image(data["image_url"])
-    return {"product": save_product(product_id=product_id, name=str(data["name"]),
-                                     description=str(data["description"]), price=int(data["price"]),
-                                     category=str(data["category"]), image_url=str(data["image_url"]),
-                                     is_active=bool(data["is_active"]))}
+    product = save_product(product_id=product_id, name=str(data["name"]),
+                           description=str(data["description"]), price=int(data["price"]),
+                           category=str(data["category"]), image_url=str(data["image_url"]),
+                           is_active=bool(data["is_active"]))
+    bump_menu_version()
+    return {"product": product}
 
 
 @app.delete("/api/admin/products/{product_id}", status_code=204)
@@ -329,6 +391,7 @@ def delete_product(product_id: int, _: dict[str, Any] = Depends(require_admin)) 
         path = (BASE_DIR / image_url.lstrip("/")).resolve()
         if path.parent == UPLOAD_DIR.resolve() and path.is_file():
             path.unlink(missing_ok=True)
+    bump_menu_version()
 
 
 @app.get("/api/admin/orders")

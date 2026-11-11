@@ -283,3 +283,7 @@ nav .cnt{position:absolute;top:-3px;right:13px;background:var(--danger);color:#f
 #t-menu:checked~.app [for=t-menu],#t-cart:checked~.app [for=t-cart],#t-orders:checked~.app [for=t-orders],#t-profile:checked~.app [for=t-profile]{color:var(--primary);font-weight:600}
 .adm-order .grow small{white-space:normal}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+
+.pf-toast{position:fixed;left:50%;bottom:calc(90px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(16px);background:var(--fg,#1c1c1e);color:var(--bg,#fff);padding:12px 18px;border-radius:14px;font-size:14px;line-height:1.35;opacity:0;pointer-events:none;transition:opacity .25s ease,transform .25s ease;z-index:9999;max-width:88%;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.pf-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media (prefers-reduced-motion:reduce){.pf-toast{transition:none}}

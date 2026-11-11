@@ -332,6 +332,30 @@
 
   window.syncCartButtons = syncButtons;
 
+  var toastEl = null;
+  function showToast(message) {
+    if (!toastEl) {
+      toastEl = document.createElement('div');
+      toastEl.className = 'pf-toast';
+      document.body.appendChild(toastEl);
+    }
+    toastEl.textContent = message;
+    toastEl.classList.add('show');
+    clearTimeout(showToast.timer);
+    showToast.timer = setTimeout(function () { toastEl.classList.remove('show'); }, 3500);
+  }
+
+  window.PFCart = {
+    items: function () { return cart; },
+    remove: function (name) {
+      if (cart[name]) { delete cart[name]; save(); render(); }
+    },
+    setPrice: function (name, price) {
+      if (cart[name]) { cart[name].price = price; save(); render(); }
+    },
+    toast: showToast
+  };
+
   if (menuList) menuList.addEventListener('click', function (e) {
     var btn = e.target.closest('.btn.add');
     if (!btn) return;
@@ -672,6 +696,7 @@
 (function () {
   var tg = window.Telegram && window.Telegram.WebApp;
   window.PF = { tg: tg };
+  var currentMenuVersion = null;
 
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
@@ -715,26 +740,106 @@
     window.dispatchEvent(new Event('resize'));
     if (window.syncCartButtons) window.syncCartButtons();
   }
+  function mapProduct(product) {
+    return {
+      id: product.id,
+      category: product.category,
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      image: product.image_url
+    };
+  }
   function requestMenu() {
     return fetch('/api/menu', { cache: 'no-store' }).then(function (response) {
       if (!response.ok) throw new Error('Не удалось обновить меню');
       return response.json();
     }).then(function (result) {
-      var products = (result.products || []).map(function (product) {
-        return {
-          id: product.id,
-          category: product.category,
-          name: product.name,
-          description: product.description,
-          price: product.price,
-          image: product.image_url
-        };
-      });
+      if (result.version != null) currentMenuVersion = result.version;
+      var products = (result.products || []).map(mapProduct);
       renderProducts(products);
       return products;
     });
   }
-  window.PF.refreshMenu = requestMenu;
+
+  function reconcileCart(products) {
+    var api = window.PFCart;
+    if (!api) return;
+    var cart = api.items();
+    var messages = [];
+    Object.keys(cart).forEach(function (name) {
+      var item = cart[name];
+      var pid = parseInt(item.pid, 10);
+      var found = null;
+      for (var i = 0; i < products.length; i++) {
+        if ((pid && products[i].id === pid) || products[i].name === name) { found = products[i]; break; }
+      }
+      if (!found) {
+        api.remove(name);
+        messages.push('позиция ' + name + ' закончилась');
+      } else if (found.price !== item.price) {
+        api.setPrice(name, found.price);
+        messages.push('цена на ' + name + ' изменилась');
+      }
+    });
+    if (messages.length && api.toast) {
+      api.toast('Меню обновилось: ' + messages.join('; '));
+    }
+  }
+
+  function syncMenu() {
+    var scrollY = window.scrollY || window.pageYOffset || 0;
+    return fetch('/api/menu?t=' + Date.now(), { cache: 'no-store' }).then(function (response) {
+      if (!response.ok) throw new Error('Не удалось обновить меню');
+      return response.json();
+    }).then(function (result) {
+      var products = (result.products || []).map(mapProduct);
+      if (result.version != null) currentMenuVersion = result.version;
+      reconcileCart(products);
+      renderProducts(products);
+      window.scrollTo(0, scrollY);
+      return products;
+    });
+  }
+  window.PF.refreshMenu = syncMenu;
+
+  var POLL_MS = 2000;
+  var pollTimer = null;
+  var pollInFlight = false;
+
+  function checkVersion() {
+    if (pollInFlight) return;
+    pollInFlight = true;
+    fetch('/api/menu/version?t=' + Date.now(), { cache: 'no-store' })
+      .then(function (response) { return response.ok ? response.json() : null; })
+      .then(function (data) {
+        if (!data) return null;
+        if (currentMenuVersion === null) {
+          currentMenuVersion = data.version;
+          return null;
+        }
+        if (data.version !== currentMenuVersion) return syncMenu();
+        return null;
+      })
+      .catch(function () {})
+      .then(function () { pollInFlight = false; });
+  }
+
+  function schedulePoll() {
+    pollTimer = setTimeout(tick, POLL_MS);
+  }
+  function tick() {
+    pollTimer = null;
+    if (!document.hidden) checkVersion();
+    schedulePoll();
+  }
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden) {
+      if (pollTimer) { clearTimeout(pollTimer); pollTimer = null; }
+      tick();
+    }
+  });
+  schedulePoll();
   function loadMenu() {
     var list = document.getElementById('menu-list');
     var chips = document.getElementById('chips');
