@@ -74,9 +74,8 @@ class ProductUpdate(BaseModel):
 def _get_telegram_user(init_data: str | None, request: Request) -> dict[str, Any] | None:
     if init_data:
         return verify_init_data(init_data, BOT_TOKEN) if BOT_TOKEN else None
-    client_host = request.client.host if request.client else ""
-    if DEBUG_MODE and client_host in LOCAL_HOSTS:
-        return {"id": 0, "first_name": "Local admin", "username": "debug"}
+    if DEBUG_MODE:
+        return {"id": 0, "first_name": "Debug User", "username": "debug"}
     return None
 
 
