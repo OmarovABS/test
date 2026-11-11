@@ -397,6 +397,9 @@
       cart = {};
       save();
       render();
+      if (tg && tg.close) {
+        tg.close();
+      }
     } catch (e) {
       window.alert('Не удалось отправить заказ. Закройте меню и откройте его снова через Telegram.');
     }
