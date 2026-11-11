@@ -4,6 +4,7 @@ import sys
 import time
 import urllib.error
 import urllib.request
+import html
 from html import escape
 from pathlib import Path
 
@@ -48,6 +49,10 @@ PRODUCTS = {
     11: ("Маргарита", 62000),
 }
 DELIVERY_PRICE = 10000
+
+
+def fmt_sum(value):
+    return f"{int(value):,}".replace(",", " ")
 
 if not TOKEN:
     raise SystemExit("Не найден BOT_TOKEN. Укажите его в файле .env рядом с bot.py.")
@@ -100,17 +105,6 @@ def main_keyboard():
             "resize_keyboard": True,
         }
     return {"keyboard": [[{"text": "🍔 Меню"}]], "resize_keyboard": True}
-
-
-def location_keyboard():
-    keyboard = []
-    if MINI_APP_URL.startswith("https://"):
-        keyboard.append([{"text": "🍔 Открыть меню", "web_app": {"url": MINI_APP_URL}}])
-    return {
-        "keyboard": keyboard + [[{"text": "📍 Отправить геолокацию", "request_location": True}]],
-        "resize_keyboard": True,
-        "one_time_keyboard": False,
-    }
 
 
 def back_keyboard():
@@ -289,7 +283,12 @@ def handle_web_app_order(message):
     if not call("sendMessage", chat_id=admin_chat_id, text=admin_text, parse_mode="HTML"):
         call("sendMessage", chat_id=chat_id, text="Не удалось передать заказ администратору. Попробуйте позже.")
         return
-    call("sendMessage", chat_id=chat_id, text="✅ Заказ отправлен! Администратор скоро свяжется с вами.")
+    call(
+        "sendMessage",
+        chat_id=chat_id,
+        text="✅ Ваш заказ принят и передан в ресторан.\nНаш сотрудник свяжется с вами для подтверждения заказа и уточнения деталей доставки.\n\nЧтобы оформить ещё один заказ, нажмите кнопку меню ниже.",
+        reply_markup=main_keyboard(),
+    )
 
 
 def handle_message(message):
@@ -314,7 +313,6 @@ def handle_message(message):
             parse_mode="HTML",
             reply_markup=main_keyboard(),
         )
-        call("sendMessage", chat_id=chat_id, text="📍 Поделитесь геолокацией для точной доставки:", reply_markup=location_keyboard())
         uid = user.get("id")
         if str(uid) != ADMIN_ID and uid not in seen_users:
             seen_users.add(uid)

@@ -394,15 +394,13 @@
         location.lat.toFixed(5) + ', ' + location.lon.toFixed(5) : '');
     try {
       tgApp.sendData(JSON.stringify({ items: items, address: address }));
-      cart = {};
-      save();
-      render();
-      if (tg && tg.close) {
-        tg.close();
-      }
     } catch (e) {
       window.alert('Не удалось отправить заказ. Закройте меню и откройте его снова через Telegram.');
+      return;
     }
+    cart = {};
+    save();
+    render();
   });
 
   render();
