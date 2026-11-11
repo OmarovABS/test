@@ -88,7 +88,7 @@ header h1{font-size:21px;font-weight:600;letter-spacing:-.025em}
 .theme::before{content:"🌙"}#dark:checked~.app .theme::before{content:"☀️"}
 .screen{display:none;padding:10px 22px 24px;animation:in .45s cubic-bezier(.2,.8,.2,1)}
 @keyframes in{from{opacity:0;transform:translateY(10px)}}
-#t-menu:checked~.app #menu,#t-cart:checked~.app #cart,#t-orders:checked~.app #orders,#t-profile:checked~.app #profile,#t-admin:checked~.app #admin{display:block}
+#t-menu:checked~.app #menu,#t-cart:checked~.app #cart,#t-orders:checked~.app #orders,#t-profile:checked~.app #profile{display:block}
 h2{font-size:40px;font-weight:700;letter-spacing:-.04em;line-height:1.05;margin:14px 0 6px}
 .lead{color:var(--muted);font-size:17px;line-height:1.45;margin:0 0 18px;letter-spacing:-.01em;max-width:34ch}
 h3[id]{scroll-margin-top:170px}
@@ -252,13 +252,6 @@ h3{display:inline-flex;align-items:center;font-size:14px;font-weight:500;color:v
 }
 @media (hover:hover){#profile .prof-logout:hover{background:#e0352b;color:#fff}}
 #profile .prof-logout:active{transform:scale(.98)}
-.stats{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px}
-.stat{background:var(--card);border-radius:var(--r);padding:18px;border:.5px solid var(--border);box-shadow:var(--shadow)}
-.stat b{font-size:24px;display:block;font-weight:600;letter-spacing:-.03em;margin-top:4px}
-#profile .stat:nth-child(1) b{color:var(--primary)}
-#profile .stat:nth-child(2) b{color:var(--ok)}
-#admin .stat:nth-child(1) b{color:var(--danger)}
-#admin .stat:nth-child(2) b{color:var(--ok)}
 .seg{display:flex;background:var(--sec);border-radius:10px;padding:2px;gap:2px}
 .seg span{padding:6px 13px;border-radius:8px;font-size:13px;font-weight:500;color:var(--muted);transition:background .2s,color .2s}
 .seg span:first-child,.seg span.sel{background:var(--card);color:var(--fg);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.12);cursor:pointer}
@@ -285,18 +278,6 @@ nav label{
 nav label svg{width:26px;height:26px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;transition:transform .12s}
 nav label:active svg{transform:scale(.9)}
 nav .cnt{position:absolute;top:-3px;right:13px;background:var(--danger);color:#fff;font-size:10px;font-weight:600;border-radius:999px;min-width:16px;height:16px;display:grid;place-items:center;padding:0 4px;border:2px solid var(--bg)}
-#t-menu:checked~.app [for=t-menu],#t-cart:checked~.app [for=t-cart],#t-orders:checked~.app [for=t-orders],#t-profile:checked~.app [for=t-profile],#t-admin:checked~.app [for=t-admin]{color:var(--primary);font-weight:600}
-.adm-only{display:none!important}
-.adm-seg{display:flex;flex-wrap:wrap;gap:2px;background:var(--sec);border-radius:10px;padding:2px}
-.adm-seg span{padding:5px 9px;border-radius:8px;font-size:11px;font-weight:500;color:var(--muted);cursor:pointer;transition:background .2s,color .2s;white-space:nowrap}
-.adm-seg span.sel{background:var(--card);color:var(--fg);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.12)}
-.mini-btn{
-  border:0;background:var(--sec);color:var(--primary);border-radius:999px;
-  padding:7px 13px;font:inherit;font-size:12px;font-weight:600;cursor:pointer;flex:none;
-  transition:background .2s,transform .12s;
-}
-.mini-btn:active{transform:scale(.95)}
-.mini-btn.danger{color:var(--danger)}
-.adm-thumb{width:44px;height:44px;border-radius:12px;object-fit:cover;flex:none}
+#t-menu:checked~.app [for=t-menu],#t-cart:checked~.app [for=t-cart],#t-orders:checked~.app [for=t-orders],#t-profile:checked~.app [for=t-profile]{color:var(--primary);font-weight:600}
 .adm-order .grow small{white-space:normal}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}

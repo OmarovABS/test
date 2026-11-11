@@ -34,6 +34,21 @@ MINI_APP_URL = os.environ.get("MINI_APP_URL", "").strip()
 NAME = os.environ.get("RESTAURANT_NAME", "Premium Food").strip() or "Premium Food"
 SUPPORT = os.environ.get("SUPPORT_USERNAME", "").strip().lstrip("@")
 
+PRODUCTS = {
+    1: ("Донар классик", 32000),
+    2: ("Донар куриный", 28000),
+    3: ("Донар XL", 42000),
+    4: ("Чизбургер", 35000),
+    5: ("Биг бургер", 48000),
+    6: ("Хот-дог классик", 18000),
+    7: ("Хот-дог датский", 22000),
+    8: ("Лимонад", 15000),
+    9: ("Айран", 9000),
+    10: ("Пепперони", 75000),
+    11: ("Маргарита", 62000),
+}
+DELIVERY_PRICE = 10000
+
 if not TOKEN:
     raise SystemExit("Не найден BOT_TOKEN. Укажите его в файле .env рядом с bot.py.")
 
@@ -80,13 +95,19 @@ def greeting(name):
 
 def main_keyboard():
     if MINI_APP_URL.startswith("https://"):
-        return {"inline_keyboard": [[{"text": "🍔 Открыть меню", "web_app": {"url": MINI_APP_URL}}]]}
-    return {"inline_keyboard": []}
+        return {
+            "keyboard": [[{"text": "🍔 Открыть меню", "web_app": {"url": MINI_APP_URL}}]],
+            "resize_keyboard": True,
+        }
+    return {"keyboard": [[{"text": "🍔 Меню"}]], "resize_keyboard": True}
 
 
 def location_keyboard():
+    keyboard = []
+    if MINI_APP_URL.startswith("https://"):
+        keyboard.append([{"text": "🍔 Открыть меню", "web_app": {"url": MINI_APP_URL}}])
     return {
-        "keyboard": [[{"text": "📍 Отправить геолокацию", "request_location": True}]],
+        "keyboard": keyboard + [[{"text": "📍 Отправить геолокацию", "request_location": True}]],
         "resize_keyboard": True,
         "one_time_keyboard": False,
     }
@@ -116,8 +137,8 @@ def screen_text(key, user_name="друг"):
     if key == "orders":
         return (
             "📦 <b>Мои заказы</b>\n\n"
-            "Активных заказов нет.\n"
-            "Когда оформите первый заказ, здесь появится статус доставки."
+            "После оформления заказ отправляется администратору.\n"
+            "История заказов и статусы доставки пока не сохраняются."
         )
     if key == "support":
         lines = [
@@ -191,11 +212,95 @@ def handle_location(message):
             pass
 
 
+def handle_web_app_order(message):
+    web_app_data = message.get("web_app_data") or {}
+    user = message.get("from", {}) or {}
+    chat_id = message.get("chat", {}).get("id")
+    raw_data = web_app_data.get("data", "")
+    if not isinstance(raw_data, str) or len(raw_data) > 4096:
+        call("sendMessage", chat_id=chat_id, text="Данные заказа слишком большие. Уменьшите корзину и попробуйте снова.")
+        return
+    try:
+        payload = json.loads(raw_data)
+    except (TypeError, json.JSONDecodeError):
+        call("sendMessage", chat_id=chat_id, text="Не удалось прочитать заказ. Пожалуйста, попробуйте ещё раз.")
+        return
+
+    requested_items = payload.get("items") if isinstance(payload, dict) else None
+    if not isinstance(requested_items, list) or not requested_items or len(requested_items) > len(PRODUCTS):
+        call("sendMessage", chat_id=chat_id, text="Корзина пуста или содержит некорректные товары.")
+        return
+
+    items = []
+    total = 0
+    seen = set()
+    for requested in requested_items:
+        if not isinstance(requested, dict):
+            continue
+        try:
+            product_id = int(requested.get("product_id"))
+            qty = int(requested.get("qty"))
+        except (TypeError, ValueError):
+            continue
+        if product_id not in PRODUCTS or not 1 <= qty <= 99 or product_id in seen:
+            continue
+        seen.add(product_id)
+        product_name, price = PRODUCTS[product_id]
+        items.append((product_name, price, qty))
+        total += price * qty
+
+    if not items:
+        call("sendMessage", chat_id=chat_id, text="В заказе нет доступных товаров. Обновите меню и попробуйте снова.")
+        return
+
+    address = payload.get("address", "")
+    if not isinstance(address, str):
+        address = ""
+    address = address.strip()[:300] or "Не указан"
+    customer_name = " ".join(
+        part for part in (user.get("first_name"), user.get("last_name")) if part
+    ).strip() or "Без имени"
+    username = f"@{user['username']}" if user.get("username") else "—"
+    order_ref = f"{user.get('id', '—')}-{message.get('message_id', '—')}"
+    item_lines = "\n".join(
+        f"• {html.escape(name)} ×{qty} — {fmt_sum(price * qty)} сум"
+        for name, price, qty in items
+    )
+    total += DELIVERY_PRICE
+    admin_text = (
+        "🆕 <b>Новый заказ из Mini App</b>\n\n"
+        f"🧾 Заказ #{order_ref}\n"
+        f"👤 {html.escape(customer_name)} ({html.escape(username)})\n"
+        f"🆔 <code>{user.get('id', '—')}</code>\n\n"
+        f"{item_lines}\n\n"
+        f"🛵 Доставка: {fmt_sum(DELIVERY_PRICE)} сум\n"
+        f"💰 Итого: <b>{fmt_sum(total)} сум</b>\n"
+        f"📍 Адрес: {html.escape(address)}"
+    )
+
+    if not ADMIN_ID:
+        call("sendMessage", chat_id=chat_id, text="Заказ не отправлен: не настроен Telegram ID администратора.")
+        return
+    try:
+        admin_chat_id = int(ADMIN_ID)
+    except ValueError:
+        call("sendMessage", chat_id=chat_id, text="Заказ не отправлен: неверно настроен администратор.")
+        return
+    if not call("sendMessage", chat_id=admin_chat_id, text=admin_text, parse_mode="HTML"):
+        call("sendMessage", chat_id=chat_id, text="Не удалось передать заказ администратору. Попробуйте позже.")
+        return
+    call("sendMessage", chat_id=chat_id, text="✅ Заказ отправлен! Администратор скоро свяжется с вами.")
+
+
 def handle_message(message):
     chat_id = message["chat"]["id"]
     user = message.get("from", {}) or {}
     text = (message.get("text") or "").strip()
     name = user.get("first_name") or "друг"
+
+    if message.get("web_app_data"):
+        handle_web_app_order(message)
+        return
 
     if "location" in message:
         handle_location(message)

@@ -46,13 +46,8 @@
 
 <section class="screen" id="orders">
 <h2>Мои заказы</h2>
-<div class="track"><div style="display:flex;justify-content:space-between"><b>Активный заказ #1042</b><span class="badge s3">В пути</span></div>
-<div class="steps"><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div>
-<small class="muted">Курьер Азиз · Донар классик ×2, Лимонад ×1</small></div>
 <div class="list" id="orders-list">
-<div class="row"><div class="grow"><b>#1042 · 89 000 сум</b><small>09.11.2026, 18:40</small></div><span class="badge s3">В пути</span></div>
-<div class="row"><div class="grow"><b>#1035 · 85 000 сум</b><small>05.11.2026, 13:12 · Пепперони ×1</small></div><span class="badge s4">Доставлен</span></div>
-<div class="row"><div class="grow"><b>#1021 · 98 000 сум</b><small>28.10.2026, 20:05 · Чизбургер ×2, Айран ×2</small></div><span class="badge s4">Доставлен</span></div>
+<div class="row"><div class="grow">Новые заказы отправляются администратору в Telegram. История заказов в приложении пока не сохраняется.</div></div>
 </div>
 </section>
 
@@ -63,10 +58,7 @@
 <p class="prof-username">@abdulbasir</p>
 <button type="button" class="btn prof-edit">Редактировать профиль</button>
 </div>
-<div class="prof-stats">
-<div class="prof-stat"><b>3</b><small>Число заказов</small></div>
-<div class="prof-stat"><b>272 000</b><small>Сумма заказов</small></div>
-</div>
+<p class="muted center">Оформляйте заказ через меню — сообщение придёт администратору в Telegram.</p>
 <h3>Настройки</h3>
 <div class="list">
 <div class="row" id="addrRow"><span class="ico i-blue"><svg viewBox="0 0 24 24"><path d="M12 21s-6.5-5.5-6.5-10a6.5 6.5 0 0 1 13 0c0 4.5-6.5 10-6.5 10Z"/><circle cx="12" cy="11" r="2.5"/></svg></span><div class="grow">Сохраненный адрес<small>Ташкент, ул. Амира Темура, 15</small></div><span class="chev"></span></div>
@@ -80,22 +72,11 @@
 <button type="button" class="btn prof-logout">Выйти</button>
 </section>
 
-<section class="screen" id="admin">
-<h2>Админ</h2>
-<div class="stats" id="adm-stats"></div>
-<h3>Заказы</h3>
-<div class="list" id="adm-orders"><p class="muted" style="padding:16px 18px">Загрузка…</p></div>
-<h3>Товары</h3>
-<div class="list" id="adm-products"><p class="muted" style="padding:16px 18px">Загрузка…</p></div>
-<button type="button" class="btn main" id="adm-add" style="margin-top:16px">+ Добавить товар</button>
-</section>
-
 <nav>
 <label for="t-menu"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7.5" height="7.5" rx="2"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="2"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="2"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="2"/></svg>Меню</label>
 <label for="t-cart"><svg viewBox="0 0 24 24"><path d="M6 8h12l-1.2 11.2a1.5 1.5 0 0 1-1.5 1.3H8.7a1.5 1.5 0 0 1-1.5-1.3L6 8Z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/></svg>Корзина<span class="cnt">3</span></label>
 <label for="t-orders"><svg viewBox="0 0 24 24"><path d="M12 3 3 7.5v9L12 21l9-4.5v-9L12 3Z"/><path d="m3 7.5 9 4.5 9-4.5"/><path d="M12 12v9"/></svg>Заказы</label>
 <label for="t-profile"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></svg>Профиль</label>
-<label for="t-admin" class="adm-only"><svg viewBox="0 0 24 24"><path d="M12 3 4 6v5c0 5 3.4 8.6 8 10 4.6-1.4 8-5 8-10V6l-8-3Z"/><path d="m9 12 2 2 4-4"/></svg>Админ</label>
 </nav>
 </div>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -393,6 +374,11 @@
 
   checkout.addEventListener('click', function () {
     if (count() === 0) return;
+    var tgApp = window.PF && PF.tg;
+    if (!tgApp || typeof tgApp.sendData !== 'function') {
+      window.alert('Откройте меню через кнопку «Открыть меню» в Telegram, чтобы отправить заказ боту.');
+      return;
+    }
     var items = [];
     for (var k in cart) {
       if (cart.hasOwnProperty(k)) {
@@ -401,26 +387,19 @@
         items.push({ product_id: pid, qty: cart[k].qty });
       }
     }
-    if (!window.PF || !PF.api) { window.alert('Нет соединения с сервером.'); return; }
-    checkout.disabled = true;
-    var oldText = checkout.textContent;
-    checkout.textContent = 'Отправка…';
-    PF.api('/api/orders', {
-      method: 'POST',
-      body: JSON.stringify({ items: items })
-    }).then(function (order) {
+    var location = null;
+    try { location = JSON.parse(localStorage.getItem('pf_location') || 'null'); } catch (e) {}
+    var address = location && location.text ? location.text :
+      (location && typeof location.lat === 'number' && typeof location.lon === 'number' ?
+        location.lat.toFixed(5) + ', ' + location.lon.toFixed(5) : '');
+    try {
+      tgApp.sendData(JSON.stringify({ items: items, address: address }));
       cart = {};
       save();
       render();
-      checkout.textContent = oldText;
-      document.getElementById('t-orders').checked = true;
-      if (window.PF.loadOrders) PF.loadOrders();
-      if (window.PF.loadMe) PF.loadMe();
-    }).catch(function (err) {
-      checkout.disabled = false;
-      checkout.textContent = oldText;
-      window.alert(err && err.message ? err.message : 'Не удалось оформить заказ');
-    });
+    } catch (e) {
+      window.alert('Не удалось отправить заказ. Закройте меню и откройте его снова через Telegram.');
+    }
   });
 
   render();
@@ -664,7 +643,7 @@
 <script>
 (function () {
   var tg = window.Telegram && window.Telegram.WebApp;
-  var initData = tg ? (tg.initData || '') : '';
+  window.PF = { tg: tg };
 
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
@@ -675,126 +654,51 @@
     return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
   }
   function fmtPrice(n) { return fmtNum(n) + ' сум'; }
-  function fmtDate(iso) {
-    if (!iso) return '';
-    var d = new Date(iso);
-    if (isNaN(d)) return '';
-    return d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' }) +
-      ', ' + d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
-  }
-
-  function api(path, opts) {
-    opts = opts || {};
-    opts.headers = Object.assign({ 'Content-Type': 'application/json' }, opts.headers || {});
-    if (initData) opts.headers['X-Telegram-Init-Data'] = initData;
-    return fetch(path, opts).then(function (r) {
-      return r.json().then(function (data) {
-        if (!r.ok) {
-          var msg = data && data.detail ? (Array.isArray(data.detail) ? data.detail[0].msg : data.detail) : ('Ошибка ' + r.status);
-          throw new Error(msg);
-        }
-        return data;
-      });
-    });
-  }
-
-  window.PF = { api: api, initData: initData, tg: tg };
-
-  var STATUS_BADGE = { accepted: 's1', cooking: 's2', delivery: 's3', delivered: 's4', cancelled: 's2' };
-  var STATUS_LABEL = { accepted: 'Принят', cooking: 'Готовится', delivery: 'В пути', delivered: 'Доставлен', cancelled: 'Отменён' };
-
-  function orderRow(o) {
-    var row = document.createElement('div');
-    row.className = 'row';
-    var grow = document.createElement('div');
-    grow.className = 'grow';
-    var b = document.createElement('b');
-    b.textContent = '#' + o.id + ' · ' + fmtPrice(o.total);
-    var items = (o.items || []).map(function (i) { return i.name + ' ×' + i.qty; }).join(', ');
-    var small = document.createElement('small');
-    small.textContent = fmtDate(o.created_at) + (items ? ' · ' + items : '');
-    grow.appendChild(b);
-    grow.appendChild(small);
-    var badge = document.createElement('span');
-    badge.className = 'badge ' + (STATUS_BADGE[o.status] || 's1');
-    badge.textContent = o.status_label || STATUS_LABEL[o.status] || o.status;
-    row.appendChild(grow);
-    row.appendChild(badge);
-    return row;
-  }
-
-  function loadOrders() {
-    var list = document.getElementById('orders-list');
-    if (!list) return Promise.resolve();
-    return api('/api/orders/me').then(function (orders) {
-      list.innerHTML = '';
-      if (!orders.length) {
-        list.innerHTML = '<div class="row"><div class="grow muted">Заказов пока нет</div></div>';
-        return;
-      }
-      orders.forEach(function (o) { list.appendChild(orderRow(o)); });
-    }).catch(function () {
-      /* оставляем статичные заказы */
-    });
-  }
-  window.PF.loadOrders = loadOrders;
-
-  function loadMe() {
-    return api('/api/me').then(function (me) {
-      var stats = document.querySelectorAll('#profile .prof-stat b');
-      if (stats[0]) stats[0].textContent = fmtNum(me.orders_count);
-      if (stats[1]) stats[1].textContent = fmtNum(me.total_sum);
-      if (me.username && !tg) {
-        var userEl = document.querySelector('.prof-username');
-        if (userEl) userEl.textContent = '@' + me.username;
-      }
-      if (me.is_admin) {
-        var lbl = document.querySelector('nav [for=t-admin]');
-        if (lbl) lbl.classList.remove('adm-only');
-        initAdmin();
-      }
-    }).catch(function () { /* не залогинен — меню всё равно работает */ });
-  }
-  window.PF.loadMe = loadMe;
-
   function loadMenu() {
     var list = document.getElementById('menu-list');
     var chips = document.getElementById('chips');
     if (!list) return;
-    return api('/api/menu').then(function (data) {
-      var cats = data.categories || [];
-      var products = data.products || [];
-      chips.innerHTML = '';
-      list.innerHTML = '';
-      if (!cats.length) {
-        list.innerHTML = '<p class="muted center" style="padding:30px 0">Меню пусто</p>';
-        return;
-      }
-      cats.forEach(function (cat, i) {
-        var cid = 'cat-' + i;
-        var chip = document.createElement('a');
-        chip.className = 'chip';
-        chip.href = '#' + cid;
-        chip.textContent = cat;
-        chips.appendChild(chip);
-
-        var h = document.createElement('h3');
-        h.id = cid;
-        h.textContent = cat;
-        list.appendChild(h);
-
-        var grid = document.createElement('div');
-        grid.className = 'grid';
-        products.filter(function (p) { return p.category === cat; }).forEach(function (p) {
-          grid.appendChild(productCard(p));
-        });
-        list.appendChild(grid);
-      });
-      window.dispatchEvent(new Event('resize'));
-      if (window.syncCartButtons) window.syncCartButtons();
-    }).catch(function () {
-      list.innerHTML = '<p class="muted center" style="padding:30px 0">Не удалось загрузить меню. Запустите backend.</p>';
+    var products = [
+      { id: 1, category: 'Донар', name: 'Донар классик', description: 'Говядина, свежие овощи, лаваш', price: 32000, image: 'images/donar-klassik.jpg' },
+      { id: 2, category: 'Донар', name: 'Донар куриный', description: 'Курица на гриле, соус, салат', price: 28000, image: 'images/donar-kurinyy.jpg' },
+      { id: 3, category: 'Донар', name: 'Донар XL', description: 'Двойная порция мяса и сыр', price: 42000, image: 'images/donar-xl.jpg' },
+      { id: 4, category: 'Бургер', name: 'Чизбургер', description: 'Говяжья котлета, чеддер, томат', price: 35000, image: 'images/chizburger.jpg' },
+      { id: 5, category: 'Бургер', name: 'Биг бургер', description: 'Две котлеты, лук, фирменный соус', price: 48000, image: 'images/big-burger.jpg' },
+      { id: 6, category: 'Хот-дог', name: 'Хот-дог классик', description: 'Сосиска, горчица, булочка бриошь', price: 18000, image: 'images/hot-dog-klassik.jpg' },
+      { id: 7, category: 'Хот-дог', name: 'Хот-дог датский', description: 'Хрустящий лук, огурчики', price: 22000, image: 'images/hot-dog-datskiy.jpg' },
+      { id: 8, category: 'Напитки', name: 'Лимонад', description: 'Лимон, мята, лёд', price: 15000, image: 'images/limonad.jpg' },
+      { id: 9, category: 'Напитки', name: 'Айран', description: 'Освежающий, домашний', price: 9000, image: 'images/ayran.jpg' },
+      { id: 10, category: 'Пицца', name: 'Пепперони', description: 'Пепперони, моцарелла, томатный соус', price: 75000, image: 'images/pepperoni.jpg' },
+      { id: 11, category: 'Пицца', name: 'Маргарита', description: 'Моцарелла, томаты, базилик', price: 62000, image: 'images/margarita.jpg' }
+    ];
+    var cats = [];
+    products.forEach(function (product) {
+      if (cats.indexOf(product.category) === -1) cats.push(product.category);
     });
+    chips.innerHTML = '';
+    list.innerHTML = '';
+    cats.forEach(function (cat, i) {
+      var cid = 'cat-' + i;
+      var chip = document.createElement('a');
+      chip.className = 'chip';
+      chip.href = '#' + cid;
+      chip.textContent = cat;
+      chips.appendChild(chip);
+
+      var h = document.createElement('h3');
+      h.id = cid;
+      h.textContent = cat;
+      list.appendChild(h);
+
+      var grid = document.createElement('div');
+      grid.className = 'grid';
+      products.filter(function (p) { return p.category === cat; }).forEach(function (p) {
+        grid.appendChild(productCard(p));
+      });
+      list.appendChild(grid);
+    });
+    window.dispatchEvent(new Event('resize'));
+    if (window.syncCartButtons) window.syncCartButtons();
   }
 
   function productCard(p) {
@@ -837,196 +741,7 @@
     return card;
   }
 
-  /* ---------- Admin ---------- */
-
-  var STATUSES = ['accepted', 'cooking', 'delivery', 'delivered', 'cancelled'];
-  var adminLoaded = false;
-
-  function initAdmin() {
-    if (adminLoaded) return;
-    adminLoaded = true;
-    var statsEl = document.getElementById('adm-stats');
-    var ordersEl = document.getElementById('adm-orders');
-    var productsEl = document.getElementById('adm-products');
-
-    api('/api/admin/stats').then(function (s) {
-      statsEl.innerHTML =
-        '<div class="stat"><small class="muted">Заказов</small><b>' + fmtNum(s.orders) + '</b></div>' +
-        '<div class="stat"><small class="muted">Выручка</small><b>' + fmtNum(s.revenue) + '</b></div>' +
-        '<div class="stat"><small class="muted">Активных</small><b>' + fmtNum(s.active_orders) + '</b></div>' +
-        '<div class="stat"><small class="muted">Товаров</small><b>' + fmtNum(s.products) + '</b></div>';
-    }).catch(function () {});
-
-    function loadAdminOrders() {
-      api('/api/admin/orders').then(function (orders) {
-        ordersEl.innerHTML = '';
-        if (!orders.length) {
-          ordersEl.innerHTML = '<div class="row"><div class="grow muted">Заказов нет</div></div>';
-          return;
-        }
-        orders.forEach(function (o) {
-          var row = document.createElement('div');
-          row.className = 'row adm-order';
-          row.setAttribute('data-id', o.id);
-          var grow = document.createElement('div');
-          grow.className = 'grow';
-          var b = document.createElement('b');
-          b.textContent = '#' + o.id + ' · ' + fmtPrice(o.total);
-          var userName = o.user ? (o.user.name + (o.user.username ? ' (@' + o.user.username + ')' : '')) : '';
-          var items = (o.items || []).map(function (i) { return i.name + ' ×' + i.qty; }).join(', ');
-          var small = document.createElement('small');
-          small.textContent = fmtDate(o.created_at) + ' · ' + userName + (items ? ' · ' + items : '');
-          grow.appendChild(b);
-          grow.appendChild(small);
-
-          var seg = document.createElement('div');
-          seg.className = 'adm-seg';
-          STATUSES.forEach(function (st) {
-            var sp = document.createElement('span');
-            sp.textContent = STATUS_LABEL[st];
-            sp.setAttribute('data-status', st);
-            if (st === o.status) sp.classList.add('sel');
-            seg.appendChild(sp);
-          });
-          row.appendChild(grow);
-          row.appendChild(seg);
-          ordersEl.appendChild(row);
-        });
-      }).catch(function () {});
-    }
-
-    ordersEl.addEventListener('click', function (e) {
-      var sp = e.target.closest('.adm-seg span');
-      if (!sp) return;
-      var row = sp.closest('.adm-order');
-      var id = row.getAttribute('data-id');
-      var status = sp.getAttribute('data-status');
-      Array.prototype.forEach.call(row.querySelectorAll('.adm-seg span'), function (s) {
-        s.classList.toggle('sel', s === sp);
-      });
-      api('/api/admin/orders/' + id, { method: 'PATCH', body: JSON.stringify({ status: status }) })
-        .then(loadAdminOrders).catch(function () { loadAdminOrders(); });
-    });
-
-    function loadAdminProducts() {
-      api('/api/admin/products').then(function (products) {
-        productsEl.innerHTML = '';
-        products.forEach(function (p) {
-          var row = document.createElement('div');
-          row.className = 'row';
-          row.setAttribute('data-id', p.id);
-
-          var thumb = document.createElement('img');
-          thumb.className = 'adm-thumb';
-          if (p.image) { thumb.src = p.image; thumb.alt = p.name; }
-          else { thumb.remove(); }
-
-          var grow = document.createElement('div');
-          grow.className = 'grow';
-          var b = document.createElement('b');
-          b.textContent = p.name;
-          var small = document.createElement('small');
-          small.textContent = p.category + ' · ' + fmtPrice(p.price) + (p.in_stock ? '' : ' · нет в наличии');
-          grow.appendChild(b);
-          grow.appendChild(small);
-
-          var priceBtn = document.createElement('button');
-          priceBtn.type = 'button';
-          priceBtn.className = 'mini-btn';
-          priceBtn.textContent = 'Цена';
-          priceBtn.setAttribute('data-act', 'price');
-
-          var stockBtn = document.createElement('button');
-          stockBtn.type = 'button';
-          stockBtn.className = 'mini-btn';
-          stockBtn.textContent = p.in_stock ? 'Скрыть' : 'Показать';
-          stockBtn.setAttribute('data-act', 'stock');
-
-          var delBtn = document.createElement('button');
-          delBtn.type = 'button';
-          delBtn.className = 'mini-btn danger';
-          delBtn.textContent = '✕';
-          delBtn.setAttribute('data-act', 'del');
-
-          row.appendChild(thumb);
-          row.appendChild(grow);
-          row.appendChild(priceBtn);
-          row.appendChild(stockBtn);
-          row.appendChild(delBtn);
-          productsEl.appendChild(row);
-        });
-      }).catch(function () {});
-    }
-
-    productsEl.addEventListener('click', function (e) {
-      var btn = e.target.closest('.mini-btn');
-      if (!btn) return;
-      var row = btn.closest('.row');
-      var id = row.getAttribute('data-id');
-      var act = btn.getAttribute('data-act');
-      var product = null;
-      api('/api/admin/products').then(function (all) {
-        product = all.filter(function (p) { return String(p.id) === String(id); })[0];
-        if (!product) return null;
-        if (act === 'price') {
-          var v = window.prompt('Новая цена, сум', product.price);
-          if (v === null) return null;
-          var price = parseInt(String(v).replace(/\D/g, ''), 10);
-          if (!price) return null;
-          product.price = price;
-          return api('/api/admin/products/' + id, { method: 'PATCH', body: JSON.stringify(product) });
-        }
-        if (act === 'stock') {
-          product.in_stock = !product.in_stock;
-          return api('/api/admin/products/' + id, { method: 'PATCH', body: JSON.stringify(product) });
-        }
-        if (act === 'del') {
-          if (!window.confirm('Удалить «' + product.name + '»?')) return null;
-          return api('/api/admin/products/' + id, { method: 'DELETE' });
-        }
-        return null;
-      }).then(function () { loadAdminProducts(); loadMenu(); })
-        .catch(function (err) { window.alert(err && err.message ? err.message : 'Ошибка'); });
-    });
-
-    var addBtn = document.getElementById('adm-add');
-    if (addBtn) addBtn.addEventListener('click', function () {
-      var category = window.prompt('Категория (напр. Донар, Бургер, Пицца)');
-      if (!category || !category.trim()) return;
-      var name = window.prompt('Название товара');
-      if (!name || !name.trim()) return;
-      var desc = window.prompt('Описание', '') || '';
-      var priceStr = window.prompt('Цена, сум', '30000');
-      var price = parseInt(String(priceStr || '').replace(/\D/g, ''), 10);
-      if (!price) { window.alert('Некорректная цена'); return; }
-      var image = window.prompt('Путь к фото (напр. images/dish.jpg)', '') || '';
-      api('/api/admin/products', {
-        method: 'POST',
-        body: JSON.stringify({
-          category: category.trim(),
-          name: name.trim(),
-          description: desc,
-          price: price,
-          image: image,
-          in_stock: true,
-          sort: 99
-        })
-      }).then(function () { loadAdminProducts(); loadMenu(); })
-        .catch(function (err) { window.alert(err && err.message ? err.message : 'Ошибка'); });
-    });
-
-    loadAdminOrders();
-    loadAdminProducts();
-  }
-
-  var adminRadio = document.getElementById('t-admin');
-  if (adminRadio) adminRadio.addEventListener('change', function () {
-    if (adminRadio.checked) initAdmin();
-  });
-
   loadMenu();
-  loadOrders();
-  loadMe();
 })();
 </script>
 </body>
