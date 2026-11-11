@@ -33,6 +33,7 @@ ADMIN_IDS = {
     if value.strip()
 }
 DEBUG_MODE = os.getenv("DEBUG_MODE", "false").lower() in {"1", "true", "yes", "on"}
+SKIP_AUTH_CHECK = os.getenv("SKIP_AUTH_CHECK", "false").lower() in {"1", "true", "yes", "on"}
 RESTAURANT_NAME = os.getenv("RESTAURANT_NAME", "Premium Food").strip() or "Premium Food"
 STATIC_DIR = BASE_DIR
 UPLOAD_DIR = BASE_DIR / "static" / "uploads"
@@ -74,8 +75,8 @@ class ProductUpdate(BaseModel):
 def _get_telegram_user(init_data: str | None, request: Request) -> dict[str, Any] | None:
     if init_data:
         return verify_init_data(init_data, BOT_TOKEN) if BOT_TOKEN else None
-    if DEBUG_MODE:
-        return {"id": 0, "first_name": "Debug User", "username": "debug"}
+    if DEBUG_MODE or SKIP_AUTH_CHECK:
+        return {"id": 0, "first_name": "Guest User", "username": "guest"}
     return None
 
 
