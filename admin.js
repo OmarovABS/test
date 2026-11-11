@@ -131,6 +131,17 @@
     form.elements.category.value = product ? product.category : '';
     form.elements.image_url.value = product && /^https?:\/\//i.test(product.image_url || '') ? product.image_url : '';
     form.elements.is_active.checked = product ? Boolean(product.is_active) : true;
+    var preview = document.getElementById('pf-admin-image-preview');
+    var previewImg = preview ? preview.querySelector('img') : null;
+    if (preview && previewImg) {
+      if (product && product.image_url) {
+        previewImg.src = product.image_url;
+        preview.style.display = 'block';
+      } else {
+        previewImg.removeAttribute('src');
+        preview.style.display = 'none';
+      }
+    }
     document.getElementById('pf-admin-modal-title').textContent = product ? 'Редактировать блюдо' : 'Новое блюдо';
     modal.classList.add('open');
   }

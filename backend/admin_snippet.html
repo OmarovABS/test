@@ -81,6 +81,7 @@
       <label class="pf-admin-field">Категория<input name="category" required maxlength="80" placeholder="Например, Бургеры"></label>
       <label class="pf-admin-field">Ссылка на фото<input name="image_url" type="url" placeholder="https://…"></label>
       <label class="pf-admin-field">Или загрузить фото<input name="image" type="file" accept="image/jpeg,image/png,image/webp,image/gif"></label>
+      <div id="pf-admin-image-preview" style="display:none"><img src="" alt="Текущее фото" style="width:72px;height:72px;object-fit:cover;border-radius:10px;border:1px solid #e7ecf2"></div>
       <label class="pf-admin-toggle-switch"><input name="is_active" type="checkbox" checked><span>В наличии</span></label>
       <div class="pf-admin-modal-actions"><button class="pf-admin-btn secondary" type="button" id="pf-admin-cancel">Отмена</button><button class="pf-admin-btn" type="submit">Сохранить</button></div>
     </form>

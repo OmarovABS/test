@@ -356,7 +356,8 @@ async def update_product(
         if uploaded:
             data["image_url"] = uploaded
         elif "image_url" in values:
-            data["image_url"] = validate_remote_image(str(values["image_url"]))
+            remote_image = str(values["image_url"]).strip()
+            data["image_url"] = validate_remote_image(remote_image) if remote_image else str(old["image_url"])
     else:
         try:
             values = await request.json()
