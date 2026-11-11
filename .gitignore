@@ -2,6 +2,10 @@
 __pycache__/
 *.pyc
 *.db
+*.db-shm
+*.db-wal
 *.log
+static/uploads/*
+!static/uploads/.gitkeep
 
 .idea/

@@ -1,0 +1,89 @@
+<style>
+#pf-admin-root, #pf-admin-root * { box-sizing: border-box; }
+#pf-admin-root { --pf-ink:#17202b; --pf-muted:#718096; --pf-line:#e7ecf2; --pf-brand:#1769e0; color:var(--pf-ink); font:14px/1.45 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+#pf-admin-toggle { position:fixed; right:18px; bottom:22px; z-index:9999; border:0; border-radius:999px; background:#152338; color:#fff; padding:13px 20px; font:inherit; font-size:14px; font-weight:600; line-height:1; box-shadow:0 10px 28px #15233840; cursor:pointer; }
+#pf-admin-panel { display:none; position:fixed; inset:0; z-index:9998; overflow:auto; background:#f4f7fb; padding:24px max(16px,calc((100vw - 1060px)/2)) 90px; }
+#pf-admin-panel.pf-open { display:block; }
+.pf-admin-top { position:static; display:flex; flex-direction:row; align-items:center; justify-content:space-between; gap:16px; max-width:1060px; margin:0 auto 22px; padding:0; border:0; background:none; backdrop-filter:none; -webkit-backdrop-filter:none; }
+.pf-admin-top h1 { margin:0; font-size:26px; letter-spacing:-.04em; }
+.pf-admin-sub { margin:4px 0 0; color:var(--pf-muted); }
+.pf-admin-actions,.pf-admin-tabs { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+.pf-admin-btn { border:0; border-radius:11px; background:var(--pf-brand); color:white; padding:11px 15px; font:inherit; font-size:13px; font-weight:600; cursor:pointer; }
+.pf-admin-btn.secondary { background:white; border:1px solid var(--pf-line); color:var(--pf-ink); }
+.pf-admin-stats { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; max-width:1060px; margin:0 auto 20px; }
+.pf-admin-stat,.pf-admin-card { border:1px solid var(--pf-line); border-radius:18px; background:#fff; box-shadow:0 6px 24px #17202b08; }
+.pf-admin-stat { padding:18px 20px; }
+.pf-admin-stat span { display:block; color:var(--pf-muted); font-weight:500; }
+.pf-admin-stat strong { display:block; margin-top:7px; font-size:27px; letter-spacing:-.04em; }
+.pf-admin-card { max-width:1060px; margin:0 auto; padding:18px; }
+.pf-admin-tabs { border-bottom:1px solid var(--pf-line); margin:-2px 0 16px; }
+.pf-admin-tab { border:0; border-bottom:2px solid transparent; padding:10px 12px; color:var(--pf-muted); background:none; font:inherit; font-size:14px; font-weight:600; cursor:pointer; }
+.pf-admin-tab.active { border-color:var(--pf-brand); color:var(--pf-brand); }
+.pf-admin-list { display:grid; gap:10px; }
+.pf-admin-product,.pf-admin-order { display:flex; align-items:center; gap:14px; border:1px solid var(--pf-line); border-radius:14px; padding:12px; }
+.pf-admin-product img { width:68px; height:68px; flex:none; border-radius:12px; object-fit:cover; background:#f1f3f6; }
+.pf-admin-product-main { min-width:0; flex:1; }
+.pf-admin-product-main strong,.pf-admin-order strong { display:block; }
+.pf-admin-product-main small,.pf-admin-order small { display:block; margin-top:3px; color:var(--pf-muted); }
+.pf-admin-controls { display:flex; align-items:center; gap:9px; flex-wrap:wrap; justify-content:flex-end; }
+.pf-admin-mini { border:1px solid var(--pf-line); background:#fff; color:var(--pf-ink); border-radius:9px; padding:8px 10px; font:inherit; font-size:12px; font-weight:600; cursor:pointer; }
+.pf-admin-mini.danger { color:#c73333; }
+.pf-admin-toggle-switch { display:flex; align-items:center; gap:7px; cursor:pointer; color:var(--pf-muted); font-size:12px; white-space:nowrap; }
+.pf-admin-toggle-switch input { appearance:none; width:38px; height:22px; margin:0; border-radius:99px; background:#cbd2dc; position:relative; cursor:pointer; transition:.2s; }
+.pf-admin-toggle-switch input::after { content:""; position:absolute; width:16px; height:16px; left:3px; top:3px; border-radius:50%; background:#fff; transition:.2s; box-shadow:0 1px 3px #0002; }
+.pf-admin-toggle-switch input:checked { background:#25b66a; }
+.pf-admin-toggle-switch input:checked::after { transform:translateX(16px); }
+.pf-admin-order { align-items:flex-start; justify-content:space-between; }
+.pf-admin-order-items { white-space:pre-line; margin-top:8px; color:#435064; }
+.pf-admin-order-total { font-weight:700; white-space:nowrap; }
+.pf-admin-empty,.pf-admin-status { padding:24px; color:var(--pf-muted); text-align:center; }
+#pf-admin-toast { position:fixed; left:50%; bottom:22px; transform:translateX(-50%); background:#17202b; color:white; padding:11px 16px; border-radius:10px; z-index:10001; display:none; max-width:calc(100vw - 32px); }
+#pf-admin-modal { position:fixed; inset:0; z-index:10000; display:none; place-items:center; padding:16px; background:#101a2b80; }
+#pf-admin-modal.open { display:grid; }
+.pf-admin-dialog { width:min(520px,100%); max-height:90vh; overflow:auto; border-radius:18px; padding:22px; background:#fff; box-shadow:0 24px 80px #0003; }
+.pf-admin-dialog h2 { margin:0 0 16px; font-size:22px; }
+.pf-admin-form { display:grid; gap:12px; }
+.pf-admin-field { display:grid; gap:6px; color:#4b5565; font-size:12px; font-weight:600; }
+.pf-admin-field input,.pf-admin-field textarea { width:100%; min-width:0; border:1px solid #dfe5ec; border-radius:10px; padding:11px 12px; color:#17202b; font:inherit; font-size:14px; background:white; }
+.pf-admin-field textarea { min-height:72px; resize:vertical; }
+.pf-admin-modal-actions { display:flex; justify-content:flex-end; gap:9px; margin-top:6px; }
+@media(max-width:640px) { #pf-admin-panel{padding:18px 12px 88px}.pf-admin-top{align-items:flex-start;flex-direction:column}.pf-admin-stats{gap:9px}.pf-admin-stat{padding:14px}.pf-admin-stat strong{font-size:21px}.pf-admin-product{align-items:flex-start;flex-wrap:wrap}.pf-admin-product-main{flex-basis:calc(100% - 88px)}.pf-admin-controls{width:100%;justify-content:flex-start}.pf-admin-order{gap:10px;flex-direction:column}.pf-admin-order-total{align-self:flex-end} }
+</style>
+<div id="pf-admin-root">
+  <button type="button" id="pf-admin-toggle" style="display:none">Админка</button>
+  <section id="pf-admin-panel" aria-label="Панель администратора">
+    <header class="pf-admin-top">
+      <div><h1>Панель управления</h1><p class="pf-admin-sub">Premium Food · управление заказами и меню</p></div>
+      <div class="pf-admin-actions"><button class="pf-admin-btn secondary" type="button" id="pf-admin-reload">Обновить</button></div>
+    </header>
+    <div class="pf-admin-stats">
+      <article class="pf-admin-stat"><span>Заказов сегодня</span><strong id="pf-stat-count">—</strong></article>
+      <article class="pf-admin-stat"><span>Выручка сегодня</span><strong id="pf-stat-revenue">—</strong></article>
+    </div>
+    <section class="pf-admin-card">
+      <div class="pf-admin-tabs" role="tablist">
+        <button type="button" class="pf-admin-tab active" data-tab="products">Меню</button>
+        <button type="button" class="pf-admin-tab" data-tab="orders">Заказы</button>
+      </div>
+      <div id="pf-admin-products-view">
+        <div class="pf-admin-actions" style="justify-content:flex-end;margin-bottom:14px"><button class="pf-admin-btn" type="button" id="pf-admin-add">+ Добавить блюдо</button></div>
+        <div id="pf-admin-products" class="pf-admin-list"><div class="pf-admin-status">Загрузка меню…</div></div>
+      </div>
+      <div id="pf-admin-orders-view" hidden><div id="pf-admin-orders" class="pf-admin-list"><div class="pf-admin-status">Загрузка заказов…</div></div></div>
+    </section>
+  </section>
+  <div id="pf-admin-modal" role="dialog" aria-modal="true"><div class="pf-admin-dialog">
+    <h2 id="pf-admin-modal-title">Новое блюдо</h2>
+    <form id="pf-admin-form" class="pf-admin-form">
+      <label class="pf-admin-field">Название<input name="name" required maxlength="120"></label>
+      <label class="pf-admin-field">Описание<textarea name="description" maxlength="500"></textarea></label>
+      <label class="pf-admin-field">Цена, сум<input name="price" type="number" min="0" step="1" required></label>
+      <label class="pf-admin-field">Категория<input name="category" required maxlength="80" placeholder="Например, Бургеры"></label>
+      <label class="pf-admin-field">Ссылка на фото<input name="image_url" type="url" placeholder="https://…"></label>
+      <label class="pf-admin-field">Или загрузить фото<input name="image" type="file" accept="image/jpeg,image/png,image/webp,image/gif"></label>
+      <label class="pf-admin-toggle-switch"><input name="is_active" type="checkbox" checked><span>В наличии</span></label>
+      <div class="pf-admin-modal-actions"><button class="pf-admin-btn secondary" type="button" id="pf-admin-cancel">Отмена</button><button class="pf-admin-btn" type="submit">Сохранить</button></div>
+    </form>
+  </div></div>
+  <div id="pf-admin-toast" role="status"></div>
+</div>

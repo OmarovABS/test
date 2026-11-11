@@ -39,6 +39,8 @@
 <section class="screen" id="cart">
 <h2>Корзина</h2>
 <div class="list" id="cart-list"></div>
+<label class="order-field">Телефон для связи<input id="order-phone" type="tel" autocomplete="tel" placeholder="+998 90 123 45 67" maxlength="40"></label>
+<label class="order-field">Комментарий к заказу<textarea id="order-comment" rows="2" maxlength="1000" placeholder="Домофон, ориентир или пожелания"></textarea></label>
 <h3>Итого</h3>
 <div class="list sum"><div class="row"><span>Подытог</span><span id="cart-sub">0 сум</span></div><div class="row"><span>Доставка</span><span id="cart-delivery">0 сум</span></div><div class="row t"><span>Итого</span><span id="cart-total">0 сум</span></div></div>
 <br><button type="button" class="btn main" id="checkout" disabled>Оформить заказ </button>
@@ -372,13 +374,8 @@
     render();
   });
 
-  checkout.addEventListener('click', function () {
-    if (count() === 0) return;
-    var tgApp = window.PF && PF.tg;
-    if (!tgApp || typeof tgApp.sendData !== 'function') {
-      window.alert('Откройте меню через кнопку «Открыть меню» в Telegram, чтобы отправить заказ боту.');
-      return;
-    }
+  checkout.addEventListener('click', async function () {
+    if (count() === 0 || checkout.dataset.submitting === 'true') return;
     var items = [];
     for (var k in cart) {
       if (cart.hasOwnProperty(k)) {
@@ -392,15 +389,45 @@
     var address = location && location.text ? location.text :
       (location && typeof location.lat === 'number' && typeof location.lon === 'number' ?
         location.lat.toFixed(5) + ', ' + location.lon.toFixed(5) : '');
+    var tgApp = window.PF && window.PF.tg;
+    var headers = { 'Content-Type': 'application/json' };
+    if (tgApp && tgApp.initData) headers['X-Telegram-Init-Data'] = tgApp.initData;
+    var phoneInput = document.getElementById('order-phone');
+    var commentInput = document.getElementById('order-comment');
+    checkout.dataset.submitting = 'true';
+    checkout.disabled = true;
+    var checkoutText = checkout.textContent;
+    checkout.textContent = 'Отправляем заказ…';
     try {
-      tgApp.sendData(JSON.stringify({ items: items, address: address }));
+      var response = await fetch('/api/orders', {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify({
+          items: items,
+          address: address,
+          phone: phoneInput ? phoneInput.value.trim() : '',
+          comment: commentInput ? commentInput.value.trim() : ''
+        })
+      });
+      var result = {};
+      try { result = await response.json(); } catch (e) {}
+      if (!response.ok) throw new Error(result.detail || 'Не удалось оформить заказ.');
+      if (!result.notification_sent) {
+        window.alert('Заказ сохранён, но сейчас ресторан не получил уведомление. Пожалуйста, свяжитесь с нами для подтверждения.');
+      } else {
+        window.alert('Спасибо! Заказ принят. Мы свяжемся с вами для подтверждения.');
+      }
+      cart = {};
+      save();
+      render();
+      if (commentInput) commentInput.value = '';
     } catch (e) {
-      window.alert('Не удалось отправить заказ. Закройте меню и откройте его снова через Telegram.');
-      return;
+      window.alert(e.message || 'Не удалось отправить заказ. Проверьте соединение и попробуйте снова.');
+    } finally {
+      checkout.dataset.submitting = 'false';
+      checkout.textContent = checkoutText;
+      checkout.disabled = count() === 0;
     }
-    cart = {};
-    save();
-    render();
   });
 
   render();
@@ -655,23 +682,10 @@
     return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
   }
   function fmtPrice(n) { return fmtNum(n) + ' сум'; }
-  function loadMenu() {
+  function renderProducts(products) {
     var list = document.getElementById('menu-list');
     var chips = document.getElementById('chips');
-    if (!list) return;
-    var products = [
-      { id: 1, category: 'Донар', name: 'Донар классик', description: 'Говядина, свежие овощи, лаваш', price: 32000, image: 'images/donar-klassik.jpg' },
-      { id: 2, category: 'Донар', name: 'Донар куриный', description: 'Курица на гриле, соус, салат', price: 28000, image: 'images/donar-kurinyy.jpg' },
-      { id: 3, category: 'Донар', name: 'Донар XL', description: 'Двойная порция мяса и сыр', price: 42000, image: 'images/donar-xl.jpg' },
-      { id: 4, category: 'Бургер', name: 'Чизбургер', description: 'Говяжья котлета, чеддер, томат', price: 35000, image: 'images/chizburger.jpg' },
-      { id: 5, category: 'Бургер', name: 'Биг бургер', description: 'Две котлеты, лук, фирменный соус', price: 48000, image: 'images/big-burger.jpg' },
-      { id: 6, category: 'Хот-дог', name: 'Хот-дог классик', description: 'Сосиска, горчица, булочка бриошь', price: 18000, image: 'images/hot-dog-klassik.jpg' },
-      { id: 7, category: 'Хот-дог', name: 'Хот-дог датский', description: 'Хрустящий лук, огурчики', price: 22000, image: 'images/hot-dog-datskiy.jpg' },
-      { id: 8, category: 'Напитки', name: 'Лимонад', description: 'Лимон, мята, лёд', price: 15000, image: 'images/limonad.jpg' },
-      { id: 9, category: 'Напитки', name: 'Айран', description: 'Освежающий, домашний', price: 9000, image: 'images/ayran.jpg' },
-      { id: 10, category: 'Пицца', name: 'Пепперони', description: 'Пепперони, моцарелла, томатный соус', price: 75000, image: 'images/pepperoni.jpg' },
-      { id: 11, category: 'Пицца', name: 'Маргарита', description: 'Моцарелла, томаты, базилик', price: 62000, image: 'images/margarita.jpg' }
-    ];
+    if (!list || !chips) return;
     var cats = [];
     products.forEach(function (product) {
       if (cats.indexOf(product.category) === -1) cats.push(product.category);
@@ -700,6 +714,45 @@
     });
     window.dispatchEvent(new Event('resize'));
     if (window.syncCartButtons) window.syncCartButtons();
+  }
+  function requestMenu() {
+    return fetch('/api/menu', { cache: 'no-store' }).then(function (response) {
+      if (!response.ok) throw new Error('Не удалось обновить меню');
+      return response.json();
+    }).then(function (result) {
+      var products = (result.products || []).map(function (product) {
+        return {
+          id: product.id,
+          category: product.category,
+          name: product.name,
+          description: product.description,
+          price: product.price,
+          image: product.image_url
+        };
+      });
+      renderProducts(products);
+      return products;
+    });
+  }
+  window.PF.refreshMenu = requestMenu;
+  function loadMenu() {
+    var list = document.getElementById('menu-list');
+    var chips = document.getElementById('chips');
+    if (!list) return;
+    var products = [
+      { id: 1, category: 'Донар', name: 'Донар классик', description: 'Говядина, свежие овощи, лаваш', price: 32000, image: 'images/donar-klassik.jpg' },
+      { id: 2, category: 'Донар', name: 'Донар куриный', description: 'Курица на гриле, соус, салат', price: 28000, image: 'images/donar-kurinyy.jpg' },
+      { id: 3, category: 'Донар', name: 'Донар XL', description: 'Двойная порция мяса и сыр', price: 42000, image: 'images/donar-xl.jpg' },
+      { id: 4, category: 'Бургер', name: 'Чизбургер', description: 'Говяжья котлета, чеддер, томат', price: 35000, image: 'images/chizburger.jpg' },
+      { id: 5, category: 'Бургер', name: 'Биг бургер', description: 'Две котлеты, лук, фирменный соус', price: 48000, image: 'images/big-burger.jpg' },
+      { id: 6, category: 'Хот-дог', name: 'Хот-дог классик', description: 'Сосиска, горчица, булочка бриошь', price: 18000, image: 'images/hot-dog-klassik.jpg' },
+      { id: 7, category: 'Хот-дог', name: 'Хот-дог датский', description: 'Хрустящий лук, огурчики', price: 22000, image: 'images/hot-dog-datskiy.jpg' },
+      { id: 8, category: 'Напитки', name: 'Лимонад', description: 'Лимон, мята, лёд', price: 15000, image: 'images/limonad.jpg' },
+      { id: 9, category: 'Напитки', name: 'Айран', description: 'Освежающий, домашний', price: 9000, image: 'images/ayran.jpg' },
+      { id: 10, category: 'Пицца', name: 'Пепперони', description: 'Пепперони, моцарелла, томатный соус', price: 75000, image: 'images/pepperoni.jpg' },
+      { id: 11, category: 'Пицца', name: 'Маргарита', description: 'Моцарелла, томаты, базилик', price: 62000, image: 'images/margarita.jpg' }
+    ];
+    requestMenu().catch(function () { renderProducts(products); });
   }
 
   function productCard(p) {
@@ -745,5 +798,6 @@
   loadMenu();
 })();
 </script>
+<script src="admin.js" defer></script>
 </body>
 </html>

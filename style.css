@@ -182,6 +182,8 @@ h3{display:inline-flex;align-items:center;font-size:14px;font-weight:500;color:v
 .qty b{font-size:15px;font-weight:600;min-width:14px;text-align:center}
 .sum .row{justify-content:space-between}
 .sum .t{font-weight:600;font-size:17px}
+.order-field{display:grid;gap:7px;margin:12px 0;color:var(--muted);font-size:13px;font-weight:500}
+.order-field input,.order-field textarea{width:100%;border:1px solid var(--border);border-radius:12px;padding:12px 14px;background:var(--card);color:var(--fg);font:inherit;font-size:14px;resize:vertical}
 .badge{font-size:12px;padding:5px 11px;border-radius:999px;font-weight:500;color:#fff;white-space:nowrap;letter-spacing:-.01em}
 .s1{background:var(--primary)}.s2{background:var(--warn)}.s3{background:var(--purple)}.s4{background:var(--ok)}
 .track{
