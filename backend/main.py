@@ -77,6 +77,7 @@ def _get_telegram_user(init_data: str | None, request: Request) -> dict[str, Any
         return verify_init_data(init_data, BOT_TOKEN) if BOT_TOKEN else None
     if DEBUG_MODE or SKIP_AUTH_CHECK:
         return {"id": 0, "first_name": "Guest User", "username": "guest"}
+    print(f"[auth] no X-Telegram-Init-Data header for {request.url.path}")
     return None
 
 
@@ -92,7 +93,6 @@ def current_user(
 
 def require_admin(user: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
     if str(user.get("id")) not in ADMIN_IDS:
-        # Local-only browser testing is isolated from non-loopback clients in current_user.
         if not (DEBUG_MODE and user.get("id") == 0):
             raise HTTPException(status_code=403, detail="Недостаточно прав.")
     return user
