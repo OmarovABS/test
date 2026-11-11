@@ -9,7 +9,7 @@ services:
       - key: PYTHON_VERSION
         value: 3.12.0
       - key: DEBUG_MODE
-        value: "False"
+        value: "True"
       - key: DATABASE_PATH
         value: delivery.db
       - key: BOT_TOKEN
