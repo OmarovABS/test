@@ -47,10 +47,10 @@
 <button type="button" class="active" data-type="delivery">🛵 Доставка</button>
 <button type="button" data-type="pickup">🏪 Самовывоз</button>
 </div>
-<div id="addressSection">
+<div id="addressSection" style="display:none">
 <label class="order-field" style="position:relative">
 Адрес доставки
-<input id="order-address" type="text" placeholder="Укажите адрес доставки" readonly>
+<input id="order-address" type="text" placeholder="Город, улица, дом, квартира" autocomplete="street-address">
 <div class="address-suggestions" id="addressSuggestions" style="display:none"></div>
 </label>
 <button type="button" class="btn" id="openAddressModal" style="margin:8px 0">📍 Выбрать на карте</button>
@@ -186,13 +186,23 @@
   var addrRow = document.getElementById('addrRow');
   var addrSmall = document.querySelector('#addrRow .grow small');
 
+  function normalizeLocationText(text) {
+    if (!text) return 'Местоположение не указано';
+    var clean = String(text).replace(/\s+/g, ' ').trim();
+    if (/^-?\d+(?:\.\d+)?\s*,\s*-?\d+(?:\.\d+)?$/.test(clean)) {
+      return 'Местоположение определено';
+    }
+    return clean;
+  }
+
   function paintLocation(text) {
-    if (locText) locText.textContent = text;
-    if (addrSmall) addrSmall.textContent = text;
+    var safeText = normalizeLocationText(text);
+    if (locText) locText.textContent = safeText;
+    if (addrSmall) addrSmall.textContent = safeText;
   }
 
   function showLocation(lat, lon, source) {
-    paintLocation(lat.toFixed(5) + ', ' + lon.toFixed(5));
+    paintLocation('Местоположение определено');
     try {
       localStorage.setItem('pf_location', JSON.stringify({ lat: lat, lon: lon, ts: Date.now() }));
     } catch (e) {}
@@ -208,7 +218,7 @@
         return true;
       }
       if (typeof saved.lat === 'number' && typeof saved.lon === 'number') {
-        paintLocation(saved.lat.toFixed(5) + ', ' + saved.lon.toFixed(5));
+        paintLocation('Местоположение определено');
         return true;
       }
     } catch (e) {}
@@ -266,8 +276,24 @@
     }
   }
 
-  if (locBtn) locBtn.addEventListener('click', function () { requestLocation(true); });
-  if (addrRow) addrRow.addEventListener('click', function () { requestLocation(true); });
+  if (locBtn) {
+    locBtn.addEventListener('click', function () {
+      if (window.PF && typeof window.PF.openAddressModal === 'function') {
+        window.PF.openAddressModal();
+      } else {
+        requestLocation(true);
+      }
+    });
+  }
+  if (addrRow) {
+    addrRow.addEventListener('click', function () {
+      if (window.PF && typeof window.PF.openAddressModal === 'function') {
+        window.PF.openAddressModal();
+      } else {
+        requestLocation(true);
+      }
+    });
+  }
 
   if (!restoreLocation()) requestLocation(false);
 
@@ -1036,7 +1062,7 @@
   function goToSlide(index) {
     currentSlide = index;
     if (bannerTrack) {
-      bannerTrack.style.transform = 'translateX(-' + (currentSlide * 100) + '%)';
+      bannerTrack.style.transform = 'translateX(' + (currentSlide * 100) + '%)';
     }
     updateDots();
   }
@@ -1066,6 +1092,51 @@
   var PICKUP_PRICE = 0;
   window.PF.currentDeliveryType = 'delivery';
   window.PF.currentAddress = { lat: null, lon: null, text: '', apt: '', entrance: '', intercom: '', landmark: '' };
+
+  function normalizeAddressText(rawText) {
+    if (!rawText) return '';
+    var text = String(rawText).replace(/\s+/g, ' ').trim();
+    if (!text) return '';
+    if (/^-?\d+(?:\.\d+)?\s*,\s*-?\d+(?:\.\d+)?$/.test(text)) return '';
+    return text;
+  }
+
+  function buildAddressFromOsm(data) {
+    var addr = data && data.address ? data.address : {};
+    var parts = [];
+    var city = addr.city || addr.town || addr.village || addr.hamlet || addr.municipality || addr.county || '';
+    var road = addr.road || addr.street || addr.pedestrian || addr.path || addr.footway || '';
+    var house = addr.house_number || '';
+    var suburb = addr.suburb || '';
+    var region = addr.state || addr.region || '';
+    var country = addr.country || '';
+
+    if (city) parts.push(city);
+    if (road) parts.push(road);
+    if (house) parts.push('дом ' + house);
+    if (suburb && parts.indexOf(suburb) === -1) parts.push(suburb);
+    if (region && parts.indexOf(region) === -1) parts.push(region);
+    if (country && parts.indexOf(country) === -1) parts.push(country);
+
+    var text = parts.join(', ');
+    if (!text && data && data.display_name) {
+      text = String(data.display_name).replace(/\s*,\s*\d+\.\d+,\s*\d+\.\d+$/i, '').trim();
+    }
+
+    return normalizeAddressText(text);
+  }
+
+  function syncAddressFields() {
+    var text = normalizeAddressText(window.PF.currentAddress.text || manualAddressInput.value || orderAddress.value || '');
+    if (orderAddress) orderAddress.value = text;
+    if (document.getElementById('locText')) {
+      document.getElementById('locText').textContent = text || 'Указать местоположение';
+    }
+    if (document.querySelector('#addrRow .grow small')) {
+      document.querySelector('#addrRow .grow small').textContent = text || 'Ташкент, ул. Амира Темура, 15';
+    }
+  }
+
   var savedAddresses = [];
 
   try {
@@ -1122,11 +1193,36 @@
         b.classList.toggle('active', b.getAttribute('data-type') === type);
       });
       if (addressSection) {
-        addressSection.style.display = type === 'delivery' ? 'block' : 'none';
+        addressSection.style.display = type === 'delivery' ? 'none' : 'none';
       }
       updateDeliveryPrice();
     });
   }
+
+  function autoDetectAddressOnLoad() {
+    if (window.PF.currentAddress.text || window.PF.currentAddress.lat || window.PF.currentAddress.lon) {
+      return;
+    }
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        function (pos) {
+          window.PF.currentAddress.lat = pos.coords.latitude;
+          window.PF.currentAddress.lon = pos.coords.longitude;
+          reverseGeocode(pos.coords.latitude, pos.coords.longitude);
+        },
+        function () {
+          var saved = JSON.parse(localStorage.getItem('pf_location') || 'null');
+          if (saved && saved.text) {
+            window.PF.currentAddress.text = saved.text;
+            syncAddressFields();
+          }
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      );
+    }
+  }
+
+  autoDetectAddressOnLoad();
 
   function openModal() {
     if (addressModal) {
@@ -1134,6 +1230,9 @@
       renderSavedAddresses();
     }
   }
+
+  window.PF.openAddressModal = openModal;
+  window.PF.closeAddressModal = closeModal;
 
   function closeModal() {
     if (addressModal) {
@@ -1219,28 +1318,27 @@
     fetch(url).then(function (res) { return res.json(); })
       .then(function (data) {
         try {
-          var addr = data.address || {};
-          var parts = [];
-          if (addr.road) parts.push(addr.road);
-          if (addr.house_number) parts.push('д. ' + addr.house_number);
-          if (addr.city) parts.push(addr.city);
-          else if (addr.town) parts.push(addr.town);
-          else if (addr.village) parts.push(addr.village);
-          if (addr.state) parts.push(addr.state);
-          if (addr.country) parts.push(addr.country);
-
-          var address = parts.length > 0 ? parts.join(', ') : data.display_name || '';
+          var address = buildAddressFromOsm(data);
+          if (!address) {
+            address = normalizeAddressText(data.display_name || '');
+          }
+          if (!address) {
+            address = 'Местоположение определено';
+          }
           window.PF.currentAddress.text = address;
+          syncAddressFields();
           showMap(lat, lon);
           showAddressConfirmation(address);
         } catch (e) {
-          window.PF.currentAddress.text = lat.toFixed(5) + ', ' + lon.toFixed(5);
+          window.PF.currentAddress.text = 'Местоположение определено';
+          syncAddressFields();
           showMap(lat, lon);
           showAddressConfirmation(window.PF.currentAddress.text);
         }
       })
       .catch(function () {
-        window.PF.currentAddress.text = lat.toFixed(5) + ', ' + lon.toFixed(5);
+        window.PF.currentAddress.text = 'Местоположение определено';
+        syncAddressFields();
         showMap(lat, lon);
         showAddressConfirmation(window.PF.currentAddress.text);
       });
@@ -1290,6 +1388,11 @@
     manualAddressInput.addEventListener('blur', function () {
       setTimeout(function () { manualSuggestions.style.display = 'none'; }, 200);
     });
+
+    manualAddressInput.addEventListener('change', function () {
+      window.PF.currentAddress.text = normalizeAddressText(this.value) || '';
+      syncAddressFields();
+    });
   }
 
   function fetchAddressSuggestions(query) {
@@ -1319,8 +1422,10 @@
       div.className = 'address-suggestion';
       div.innerHTML = '<b>' + address + '</b>';
       div.addEventListener('click', function () {
-        manualAddressInput.value = address;
-        window.PF.currentAddress.text = address;
+        var safeAddress = normalizeAddressText(address) || 'Адрес не указан';
+        manualAddressInput.value = safeAddress;
+        window.PF.currentAddress.text = safeAddress;
+        syncAddressFields();
         manualSuggestions.style.display = 'none';
         try {
           window.PF.currentAddress.lat = parseFloat(feature.lat);
@@ -1369,7 +1474,7 @@
       window.PF.currentAddress.entrance = entranceInput.value.trim();
       window.PF.currentAddress.intercom = intercomInput.value.trim();
       window.PF.currentAddress.landmark = landmarkInput.value.trim();
-      window.PF.currentAddress.text = window.PF.currentAddress.text || manualAddressInput.value.trim();
+      window.PF.currentAddress.text = normalizeAddressText(window.PF.currentAddress.text || manualAddressInput.value || orderAddress.value || '');
 
       if (!window.PF.currentAddress.text) {
         alert('Укажите адрес');
@@ -1383,6 +1488,7 @@
       if (window.PF.currentAddress.landmark) fullAddress += ' (' + window.PF.currentAddress.landmark + ')';
 
       if (orderAddress) orderAddress.value = fullAddress;
+      syncAddressFields();
 
       var existingIndex = savedAddresses.findIndex(function (a) {
         return a.text === window.PF.currentAddress.text;
@@ -1422,46 +1528,6 @@
     }
   }
 
-  if (saveAddress) {
-    saveAddress.addEventListener('click', function () {
-      window.PF.currentAddress.apt = aptInput.value.trim();
-      window.PF.currentAddress.entrance = entranceInput.value.trim();
-      window.PF.currentAddress.intercom = intercomInput.value.trim();
-      window.PF.currentAddress.landmark = landmarkInput.value.trim();
-      window.PF.currentAddress.text = window.PF.currentAddress.text || manualAddressInput.value.trim();
-
-      if (!window.PF.currentAddress.text) {
-        alert('Укажите адрес');
-        return;
-      }
-
-      var fullAddress = window.PF.currentAddress.text;
-      if (window.PF.currentAddress.apt) fullAddress += ', кв. ' + window.PF.currentAddress.apt;
-      if (window.PF.currentAddress.entrance) fullAddress += ', подъезд ' + window.PF.currentAddress.entrance;
-      if (window.PF.currentAddress.intercom) fullAddress += ', домофон: ' + window.PF.currentAddress.intercom;
-      if (window.PF.currentAddress.landmark) fullAddress += ' (' + window.PF.currentAddress.landmark + ')';
-
-      if (orderAddress) orderAddress.value = fullAddress;
-      updateLocationText(window.PF.currentAddress.text);
-
-      var existingIndex = savedAddresses.findIndex(function (a) {
-        return a.text === window.PF.currentAddress.text;
-      });
-
-      if (existingIndex >= 0) {
-        savedAddresses[existingIndex] = { ...window.PF.currentAddress };
-      } else {
-        savedAddresses.push({ ...window.PF.currentAddress });
-        if (savedAddresses.length > 5) savedAddresses.shift();
-      }
-
-      try {
-        localStorage.setItem('pf_saved_addresses', JSON.stringify(savedAddresses));
-      } catch (e) {}
-
-      closeModal();
-    });
-  }
 
   restoreSavedAddress();
 })();
