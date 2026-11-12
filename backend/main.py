@@ -447,7 +447,7 @@ app.mount("/images", StaticFiles(directory=BASE_DIR / "images"), name="images")
 
 @app.get("/", include_in_schema=False)
 def storefront() -> FileResponse:
-    return FileResponse(STATIC_DIR / "index.html")
+    return FileResponse(STATIC_DIR / "index.html", headers={"Cache-Control": "no-cache"})
 
 
 # Existing CSS and JS references are relative to the project root.
@@ -459,4 +459,4 @@ def frontend_assets(asset_path: str) -> FileResponse:
     candidate = (BASE_DIR / asset_path).resolve()
     if not candidate.is_relative_to(BASE_DIR.resolve()) or not candidate.is_file():
         raise HTTPException(status_code=404, detail="Файл не найден.")
-    return FileResponse(candidate)
+    return FileResponse(candidate, headers={"Cache-Control": "no-cache"})

@@ -173,9 +173,12 @@
   }
 
   function bindEvents() {
-    document.getElementById('pf-admin-toggle').addEventListener('click', openAdmin);
-    document.getElementById('pf-admin-exit').addEventListener('click', function () { setAdminView(false); });
-    document.getElementById('pf-admin-lock-form').addEventListener('submit', async function (event) {
+    var toggleBtn = document.getElementById('pf-admin-toggle');
+    var exitBtn = document.getElementById('pf-admin-exit');
+    var lockForm = document.getElementById('pf-admin-lock-form');
+    if (toggleBtn) toggleBtn.addEventListener('click', openAdmin);
+    if (exitBtn) exitBtn.addEventListener('click', function () { setAdminView(false); });
+    if (lockForm) lockForm.addEventListener('submit', async function (event) {
       event.preventDefault();
       var input = event.currentTarget.elements.password;
       var error = document.getElementById('pf-admin-lock-error');
