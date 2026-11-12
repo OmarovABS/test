@@ -453,3 +453,43 @@ nav .cnt{position:absolute;top:-3px;right:13px;background:var(--danger);color:#f
 .address-suggestion small{
   font-size:12px;color:var(--muted)
 }
+ 
+ 
+.restaurant-status{
+  display:flex;align-items:center;gap:8px;
+  font-size:13px;font-weight:500;color:var(--fg)
+}
+.status-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--ok);box-shadow:0 0 0 3px rgba(52,199,89,.2);
+  animation:pulse 2s ease-in-out infinite
+}
+@keyframes pulse{
+  0%,100%{opacity:1;transform:scale(1)}
+  50%{opacity:.7;transform:scale(1.1)}
+}
+.search-bar{
+  position:relative;display:flex;align-items:center
+}
+.search-bar input{
+  width:100%;border:0;border-radius:12px;
+  padding:12px 44px 12px 16px;
+  background:var(--sec);color:var(--fg);
+  font:inherit;font-size:14px;
+  transition:background .2s,box-shadow .2s
+}
+.search-bar input:focus{
+  outline:none;background:var(--card);
+  box-shadow:0 0 0 3px rgba(0,113,227,.15)
+}
+.search-icon{
+  position:absolute;right:12px;
+  width:20px;height:20px;
+  stroke:var(--muted);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;
+  pointer-events:none
+}
+.delivery-info{
+  display:flex;align-items:center;gap:8px;
+  font-size:13px;font-weight:500;color:var(--muted)
+}
+.delivery-icon{font-size:16px}

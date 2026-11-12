@@ -16,6 +16,18 @@
 <div class="app">
 <header>
 <div class="head-top"><h1>Premium Food</h1><label for="dark" class="theme" title="Тема"></label></div>
+<div class="restaurant-status">
+<span class="status-dot"></span>
+<span class="status-text">Открыто • 10:00 - 23:00</span>
+</div>
+<div class="search-bar">
+<input type="search" id="searchInput" placeholder="Поиск блюд..." autocomplete="off">
+<span class="search-icon"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg></span>
+</div>
+<div class="delivery-info">
+<span class="delivery-icon">🛵</span>
+<span class="delivery-text">Доставка 30-45 мин • 10 000 сум</span>
+</div>
 <button type="button" class="loc" id="locBtn" title="Изменить местоположение">
 <span class="loc-icon"><svg viewBox="0 0 24 24"><path d="M12 21s-6.5-5.5-6.5-10a6.5 6.5 0 0 1 13 0c0 4.5-6.5 10-6.5 10Z"/><circle cx="12" cy="11" r="2.5"/></svg></span>
 <span class="loc-text" id="locText">Указать местоположение</span>
@@ -998,6 +1010,20 @@
   }
 
   loadMenu();
+
+  var searchInput = document.getElementById('searchInput');
+  if (searchInput) {
+    searchInput.addEventListener('input', function () {
+      var query = this.value.toLowerCase().trim();
+      var cards = document.querySelectorAll('#menu-list .p');
+      Array.prototype.forEach.call(cards, function (card) {
+        var name = card.querySelector('b') ? card.querySelector('b').textContent.toLowerCase() : '';
+        var desc = card.querySelector('small') ? card.querySelector('small').textContent.toLowerCase() : '';
+        var matches = name.indexOf(query) !== -1 || desc.indexOf(query) !== -1;
+        card.style.display = matches ? '' : 'none';
+      });
+    });
+  }
 })();
 </script>
 <script>
