@@ -35,6 +35,7 @@ ADMIN_IDS = {
 DEBUG_MODE = os.getenv("DEBUG_MODE", "false").lower() in {"1", "true", "yes", "on"}
 SKIP_AUTH_CHECK = os.getenv("SKIP_AUTH_CHECK", "false").lower() in {"1", "true", "yes", "on"}
 RESTAURANT_NAME = os.getenv("RESTAURANT_NAME", "Premium Food").strip() or "Premium Food"
+ADMIN_PANEL_PASSWORD = os.getenv("ADMIN_PANEL_PASSWORD", "").strip()
 STATIC_DIR = BASE_DIR
 UPLOAD_DIR = BASE_DIR / "static" / "uploads"
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
@@ -313,6 +314,17 @@ async def create_order(order: OrderCreate, user: dict[str, Any] = Depends(curren
     else:
         print(f"Order {order_id} saved; Telegram notification is not configured.")
     return {"ok": True, "order_id": order_id, "notification_sent": bool(BOT_TOKEN and ADMIN_CHAT_ID)}
+
+
+class AdminUnlock(BaseModel):
+    password: str = Field(min_length=1, max_length=128)
+
+
+@app.post("/api/admin/unlock")
+def admin_unlock(payload: AdminUnlock, _: dict[str, Any] = Depends(require_admin)) -> dict[str, bool]:
+    if not ADMIN_PANEL_PASSWORD or payload.password != ADMIN_PANEL_PASSWORD:
+        raise HTTPException(status_code=403, detail="Неверный пароль.")
+    return {"ok": True}
 
 
 @app.get("/api/admin/products")

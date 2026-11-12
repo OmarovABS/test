@@ -1,7 +1,7 @@
 <style>
 #pf-admin-root, #pf-admin-root * { box-sizing: border-box; }
 #pf-admin-root { --pf-ink:#17202b; --pf-muted:#718096; --pf-line:#e7ecf2; --pf-brand:#1769e0; color:var(--pf-ink); font:14px/1.45 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
-#pf-admin-toggle { position:fixed; right:18px; bottom:22px; z-index:9999; border:0; border-radius:999px; background:#152338; color:#fff; padding:13px 20px; font:inherit; font-size:14px; font-weight:600; line-height:1; box-shadow:0 10px 28px #15233840; cursor:pointer; }
+#pf-admin-toggle { position:fixed; top:18px; right:18px; z-index:9999; border:0; border-radius:999px; background:#152338; color:#fff; padding:13px 20px; font:inherit; font-size:14px; font-weight:600; line-height:1; box-shadow:0 10px 28px #15233840; cursor:pointer; }
 #pf-admin-panel { display:none; position:fixed; inset:0; z-index:9998; overflow:auto; background:#f4f7fb; padding:24px max(16px,calc((100vw - 1060px)/2)) 90px; }
 #pf-admin-panel.pf-open { display:block; }
 .pf-admin-top { position:static; display:flex; flex-direction:row; align-items:center; justify-content:space-between; gap:16px; max-width:1060px; margin:0 auto 22px; padding:0; border:0; background:none; backdrop-filter:none; -webkit-backdrop-filter:none; }
@@ -40,6 +40,10 @@
 #pf-admin-toast { position:fixed; left:50%; bottom:22px; transform:translateX(-50%); background:#17202b; color:white; padding:11px 16px; border-radius:10px; z-index:10001; display:none; max-width:calc(100vw - 32px); }
 #pf-admin-modal { position:fixed; inset:0; z-index:10000; display:none; place-items:center; padding:16px; background:#101a2b80; }
 #pf-admin-modal.open { display:grid; }
+#pf-admin-lock { position:fixed; inset:0; z-index:10002; display:none; place-items:center; padding:16px; background:#101a2b80; }
+#pf-admin-lock.open { display:grid; }
+#pf-admin-lock .pf-admin-dialog { width:min(360px,100%); }
+#pf-admin-lock-error { display:none; margin-top:10px; color:#c73333; font-size:12px; font-weight:600; }
 .pf-admin-dialog { width:min(520px,100%); max-height:90vh; overflow:auto; border-radius:18px; padding:22px; background:#fff; box-shadow:0 24px 80px #0003; }
 .pf-admin-dialog h2 { margin:0 0 16px; font-size:22px; }
 .pf-admin-form { display:grid; gap:12px; }
@@ -54,7 +58,7 @@
   <section id="pf-admin-panel" aria-label="Панель администратора">
     <header class="pf-admin-top">
       <div><h1>Панель управления</h1><p class="pf-admin-sub">Premium Food · управление заказами и меню</p></div>
-      <div class="pf-admin-actions"><button class="pf-admin-btn secondary" type="button" id="pf-admin-reload">Обновить</button></div>
+      <div class="pf-admin-actions"><button class="pf-admin-btn secondary" type="button" id="pf-admin-reload">Обновить</button><button class="pf-admin-btn secondary" type="button" id="pf-admin-exit" style="display:none">На витрину</button></div>
     </header>
     <div class="pf-admin-stats">
       <article class="pf-admin-stat"><span>Заказов сегодня</span><strong id="pf-stat-count">—</strong></article>
@@ -85,6 +89,14 @@
       <label class="pf-admin-toggle-switch"><input name="is_active" type="checkbox" checked><span>В наличии</span></label>
       <div class="pf-admin-modal-actions"><button class="pf-admin-btn secondary" type="button" id="pf-admin-cancel">Отмена</button><button class="pf-admin-btn" type="submit">Сохранить</button></div>
     </form>
+  </div></div>
+  <div id="pf-admin-lock" role="dialog" aria-modal="true"><div class="pf-admin-dialog">
+    <h2>Вход в админку</h2>
+    <form id="pf-admin-lock-form" class="pf-admin-form">
+      <label class="pf-admin-field">Пароль<input name="password" type="password" required autocomplete="off" autofocus></label>
+      <div class="pf-admin-modal-actions"><button class="pf-admin-btn" type="submit">Войти</button></div>
+    </form>
+    <div id="pf-admin-lock-error">Неверный пароль</div>
   </div></div>
   <div id="pf-admin-toast" role="status"></div>
 </div>

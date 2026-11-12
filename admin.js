@@ -45,14 +45,40 @@
     toast.timer = setTimeout(function () { element.style.display = 'none'; }, 3000);
   }
 
+  var LOCK_KEY = 'pf_admin_unlocked';
+
+  function isUnlocked() {
+    try { return sessionStorage.getItem(LOCK_KEY) === '1'; } catch (e) { return false; }
+  }
+
+  function showLock() {
+    var lock = document.getElementById('pf-admin-lock');
+    var error = document.getElementById('pf-admin-lock-error');
+    var input = lock && lock.querySelector('input[name="password"]');
+    if (error) error.style.display = 'none';
+    if (input) input.value = '';
+    if (lock) lock.classList.add('open');
+    if (input) input.focus();
+  }
+
+  function openAdmin() {
+    if (isUnlocked()) {
+      setAdminView(true);
+    } else {
+      showLock();
+    }
+  }
+
   function setAdminView(open) {
     adminOpen = open;
     var panel = document.getElementById('pf-admin-panel');
     var toggle = document.getElementById('pf-admin-toggle');
+    var exit = document.getElementById('pf-admin-exit');
     var storefront = document.querySelector('.app');
     if (panel) panel.classList.toggle('pf-open', open);
     if (storefront) storefront.style.display = open ? 'none' : '';
-    if (toggle) toggle.textContent = open ? 'На витрину' : 'Админка';
+    if (toggle) toggle.style.display = open ? 'none' : 'block';
+    if (exit) exit.style.display = open ? '' : 'none';
     if (open) {
       loadProducts();
       loadOrders();
@@ -147,7 +173,28 @@
   }
 
   function bindEvents() {
-    document.getElementById('pf-admin-toggle').addEventListener('click', function () { setAdminView(!adminOpen); });
+    document.getElementById('pf-admin-toggle').addEventListener('click', openAdmin);
+    document.getElementById('pf-admin-exit').addEventListener('click', function () { setAdminView(false); });
+    document.getElementById('pf-admin-lock-form').addEventListener('submit', async function (event) {
+      event.preventDefault();
+      var input = event.currentTarget.elements.password;
+      var error = document.getElementById('pf-admin-lock-error');
+      try {
+        await api('/api/admin/unlock', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: input.value })
+        });
+        try { sessionStorage.setItem(LOCK_KEY, '1'); } catch (e) {}
+        document.getElementById('pf-admin-lock').classList.remove('open');
+        setAdminView(true);
+      } catch (err) {
+        if (error) error.textContent = err.message || 'Неверный пароль';
+        error.style.display = 'block';
+        input.value = '';
+        input.focus();
+      }
+    });
     document.getElementById('pf-admin-reload').addEventListener('click', function () { loadProducts(); loadOrders(); });
     document.getElementById('pf-admin-add').addEventListener('click', function () { openProductForm(null); });
     document.getElementById('pf-admin-cancel').addEventListener('click', function () { document.getElementById('pf-admin-modal').classList.remove('open'); });
@@ -226,6 +273,7 @@
       }
       document.getElementById('pf-admin-toggle').style.display = 'block';
       bindEvents();
+      openAdmin();
     } catch (error) {
       // Do not disrupt the customer storefront if the API is unavailable.
       console.warn('Admin panel unavailable:', error.message);
