@@ -420,6 +420,26 @@ def delete_product(product_id: int, _: dict[str, Any] = Depends(require_admin)) 
     bump_menu_version()
 
 
+@app.get("/api/orders/mine")
+def my_orders(user: dict[str, Any] = Depends(current_user)) -> dict[str, Any]:
+    with connect_db() as connection:
+        rows = connection.execute(
+            """SELECT id, items_json, total_price, address, phone, comment, created_at
+               FROM orders WHERE user_id=? ORDER BY id DESC LIMIT 50""",
+            (int(user["id"]),),
+        ).fetchall()
+    orders = []
+    for row in rows:
+        data = row_to_dict(row)
+        try:
+            data["items"] = json.loads(data.pop("items_json"))
+        except (TypeError, json.JSONDecodeError):
+            data["items"] = []
+            data.pop("items_json", None)
+        orders.append(data)
+    return {"orders": orders}
+
+
 @app.get("/api/admin/orders")
 def admin_orders(_: dict[str, Any] = Depends(require_admin)) -> dict[str, Any]:
     today = datetime.now(ZoneInfo("Asia/Tashkent")).date().isoformat()

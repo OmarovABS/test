@@ -905,6 +905,78 @@
   loadMenu();
 })();
 </script>
+<script>
+(function () {
+  var list = document.getElementById('orders-list');
+  var radio = document.getElementById('t-orders');
+  if (!list) return;
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function fmtNum(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' '); }
+  function fmtDate(s) {
+    var d = new Date(String(s).replace(' ', 'T'));
+    if (isNaN(d)) return String(s || '');
+    var p = function (x) { return (x < 10 ? '0' : '') + x; };
+    return p(d.getDate()) + '.' + p(d.getMonth() + 1) + '.' + d.getFullYear() + ' · ' + p(d.getHours()) + ':' + p(d.getMinutes());
+  }
+
+  function render(orders) {
+    if (!orders.length) {
+      list.innerHTML = '<div class="row"><div class="grow">У вас пока нет заказов.<small>Оформите первый заказ через меню.</small></div></div>';
+      return;
+    }
+    list.innerHTML = '';
+    orders.forEach(function (order) {
+      var card = document.createElement('div');
+      card.className = 'list order-card';
+      var head = document.createElement('div');
+      head.className = 'row';
+      head.innerHTML = '<div class="grow"><b>Заказ #' + esc(order.id) + '</b><small>' + esc(fmtDate(order.created_at)) + '</small></div><b>' + esc(fmtNum(order.total_price)) + ' сум</b>';
+      card.appendChild(head);
+      var items = document.createElement('div');
+      items.className = 'row';
+      var lines = (order.items || []).map(function (item) {
+        return '• ' + esc(item.name) + ' ×' + esc(item.qty) + ' — ' + esc(fmtNum(item.price * item.qty)) + ' сум';
+      }).join('<br>');
+      items.innerHTML = '<div class="grow order-items">' + (lines || '—') + '</div>';
+      card.appendChild(items);
+      var meta = [];
+      if (order.address) meta.push('Адрес: ' + order.address);
+      if (order.phone) meta.push('Телефон: ' + order.phone);
+      if (order.comment) meta.push('Комментарий: ' + order.comment);
+      if (meta.length) {
+        var foot = document.createElement('div');
+        foot.className = 'row';
+        foot.innerHTML = '<div class="grow"><small>' + esc(meta.join(' · ')) + '</small></div>';
+        card.appendChild(foot);
+      }
+      list.appendChild(card);
+      list.appendChild(document.createElement('div')).style.height = '10px';
+    });
+  }
+
+  async function load() {
+    var tg = window.PF && window.PF.tg;
+    var headers = {};
+    if (tg && tg.initData) headers['X-Telegram-Init-Data'] = tg.initData;
+    try {
+      var response = await fetch('/api/orders/mine', { headers: headers, cache: 'no-store' });
+      if (!response.ok) throw new Error('load failed');
+      var data = await response.json();
+      render(data.orders || []);
+    } catch (e) {
+      list.innerHTML = '<div class="row"><div class="grow">Не удалось загрузить заказы. Попробуйте позже.</div></div>';
+    }
+  }
+
+  if (radio) radio.addEventListener('change', function () { if (radio.checked) load(); });
+  load();
+})();
+</script>
 <script src="admin.js?v=5" defer></script>
 </body>
 </html>

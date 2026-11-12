@@ -175,6 +175,8 @@ h3{display:inline-flex;align-items:center;font-size:14px;font-weight:500;color:v
   background:var(--card);border-radius:var(--r);overflow:hidden;
   border:.5px solid var(--border);box-shadow:var(--shadow);
 }
+.order-card{margin-bottom:4px}
+.order-items{font-size:13px;line-height:1.5}
 .row{display:flex;align-items:center;gap:14px;padding:15px 18px;border-bottom:.5px solid var(--border)}
 .row:last-child{border:0}
 .row .grow{flex:1;min-width:0}
