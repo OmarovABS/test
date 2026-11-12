@@ -101,8 +101,7 @@ def greeting(name):
 def main_keyboard():
     if MINI_APP_URL.startswith("https://"):
         return {
-            "keyboard": [[{"text": "🍔 Открыть меню", "web_app": {"url": MINI_APP_URL}}]],
-            "resize_keyboard": True,
+            "inline_keyboard": [[{"text": "🍔 Открыть меню", "web_app": {"url": MINI_APP_URL}}]],
         }
     return {"keyboard": [[{"text": "🍔 Меню"}]], "resize_keyboard": True}
 

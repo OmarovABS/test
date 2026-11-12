@@ -284,6 +284,14 @@ async def create_order(order: OrderCreate, user: dict[str, Any] = Depends(curren
             + f"\n📞 Телефон: {escape(order.phone.strip() or 'Не указан')}"
             + f"\n💬 Комментарий: {escape(order.comment.strip() or '—')}"
         )
+        client_lines = [f"• {escape(item['name'])} ×{item['qty']} — {item['price'] * item['qty']:,} сум".replace(",", " ") for item in items]
+        client_message = (
+            f"✅ <b>Заказ #{order_id} принят!</b>\n\n"
+            + "\n".join(client_lines)
+            + f"\n\n🛵 Доставка: 10 000 сум\n💰 <b>Итого: {total:,} сум</b>".replace(",", " ")
+            + f"\n📍 Адрес: {escape(order.address.strip() or 'Не указан')}"
+            + "\n\nНаш сотрудник свяжется с вами для подтверждения заказа и уточнения деталей доставки."
+        )
         try:
             async with httpx.AsyncClient(timeout=10) as client:
                 response = await client.post(
@@ -293,6 +301,11 @@ async def create_order(order: OrderCreate, user: dict[str, Any] = Depends(curren
                 response.raise_for_status()
                 if not response.json().get("ok"):
                     raise httpx.HTTPError("Telegram API rejected the message")
+                client_response = await client.post(
+                    f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
+                    json={"chat_id": user_id, "text": client_message, "parse_mode": "HTML"},
+                )
+                client_response.raise_for_status()
         except (httpx.HTTPError, ValueError) as error:
             # Order is already persisted; return its ID to prevent accidental duplicate submissions.
             print(f"Telegram notification failed for order {order_id}: {error}")
