@@ -39,6 +39,18 @@
 <section class="screen" id="cart">
 <h2>Корзина</h2>
 <div class="list" id="cart-list"></div>
+<div class="delivery-toggle" id="deliveryToggle">
+<button type="button" class="active" data-type="delivery">🛵 Доставка</button>
+<button type="button" data-type="pickup">🏪 Самовывоз</button>
+</div>
+<div id="addressSection">
+<label class="order-field" style="position:relative">
+Адрес доставки
+<input id="order-address" type="text" placeholder="Укажите адрес доставки" readonly>
+<div class="address-suggestions" id="addressSuggestions" style="display:none"></div>
+</label>
+<button type="button" class="btn" id="openAddressModal" style="margin:8px 0">📍 Выбрать на карте</button>
+</div>
 <label class="order-field">Телефон для связи<input id="order-phone" type="tel" autocomplete="tel" placeholder="+998 90 123 45 67" maxlength="40"></label>
 <label class="order-field">Комментарий к заказу<textarea id="order-comment" rows="2" maxlength="1000" placeholder="Домофон, ориентир или пожелания"></textarea></label>
 <h3>Итого</h3>
@@ -80,6 +92,75 @@
 <label for="t-orders"><svg viewBox="0 0 24 24"><path d="M12 3 3 7.5v9L12 21l9-4.5v-9L12 3Z"/><path d="m3 7.5 9 4.5 9-4.5"/><path d="M12 12v9"/></svg>Заказы</label>
 <label for="t-profile"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></svg>Профиль</label>
 </nav>
+
+<div class="modal-overlay" id="addressModal">
+<div class="modal-content">
+<div class="modal-header">
+<h3>📍 Выберите адрес</h3>
+<button type="button" class="modal-close" id="closeAddressModal">×</button>
+</div>
+<div class="modal-body">
+<div class="location-methods">
+<button type="button" id="autoLocation">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-6.5-5.5-6.5-10a6.5 6.5 0 0 1 13 0c0 4.5-6.5 10-6.5 10Z"/><circle cx="12" cy="11" r="2.5"/></svg>
+Определить автоматически
+</button>
+<button type="button" id="manualLocation">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+Ввести вручную
+</button>
+</div>
+
+<div id="mapSection" style="display:none">
+<div class="map-container" id="mapContainer">
+<div class="map-placeholder">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 21s-6.5-5.5-6.5-10a6.5 6.5 0 0 1 13 0c0 4.5-6.5 10-6.5 10Z"/><circle cx="12" cy="11" r="2.5"/></svg>
+<span>Нажмите "Определить автоматически"</span>
+</div>
+</div>
+</div>
+
+<div id="manualSection" style="display:none">
+<label class="order-field" style="position:relative">
+Введите адрес
+<input type="text" id="manualAddressInput" placeholder="Улица, дом, квартира">
+<div class="address-suggestions" id="manualSuggestions" style="display:none"></div>
+</label>
+</div>
+
+<div class="address-detail">
+<div>
+<label>Квартира</label>
+<input type="text" id="aptInput" placeholder="Кв.">
+</div>
+<div>
+<label>Подъезд</label>
+<input type="text" id="entranceInput" placeholder="Подъезд">
+</div>
+</div>
+<div class="address-detail full">
+<label>Домофон</label>
+<input type="text" id="intercomInput" placeholder="Код домофона">
+</div>
+<div class="address-detail full">
+<label>Ориентир</label>
+<input type="text" id="landmarkInput" placeholder="Магазин, банкомат и т.д.">
+</div>
+
+<div class="confirm-address" id="confirmSection" style="display:none">
+<h4>Подтвердите адрес</h4>
+<p id="confirmAddressText"></p>
+</div>
+
+<div class="saved-addresses" id="savedAddressesList"></div>
+
+<div class="address-actions">
+<button type="button" class="btn-secondary" id="cancelAddress">Отмена</button>
+<button type="button" class="btn-primary" id="saveAddress">Сохранить</button>
+</div>
+</div>
+</div>
+</div>
 </div>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script>
@@ -408,11 +489,20 @@
         items.push({ product_id: pid, qty: cart[k].qty });
       }
     }
-    var location = null;
-    try { location = JSON.parse(localStorage.getItem('pf_location') || 'null'); } catch (e) {}
-    var address = location && location.text ? location.text :
-      (location && typeof location.lat === 'number' && typeof location.lon === 'number' ?
-        location.lat.toFixed(5) + ', ' + location.lon.toFixed(5) : '');
+
+    var deliveryType = (window.PF && window.PF.currentDeliveryType) || 'delivery';
+    var address = '';
+    if (deliveryType === 'delivery') {
+      var orderAddressInput = document.getElementById('order-address');
+      address = orderAddressInput ? orderAddressInput.value.trim() : '';
+      if (!address) {
+        window.alert('Укажите адрес доставки');
+        return;
+      }
+    } else {
+      address = 'Самовывоз';
+    }
+
     var tgApp = window.PF && window.PF.tg;
     var headers = { 'Content-Type': 'application/json' };
     if (tgApp && tgApp.initData) headers['X-Telegram-Init-Data'] = tgApp.initData;
@@ -430,7 +520,8 @@
           items: items,
           address: address,
           phone: phoneInput ? phoneInput.value.trim() : '',
-          comment: commentInput ? commentInput.value.trim() : ''
+          comment: commentInput ? commentInput.value.trim() : '',
+          delivery_type: deliveryType
         })
       });
       var result = {};
@@ -445,6 +536,10 @@
       save();
       render();
       if (commentInput) commentInput.value = '';
+      if (document.getElementById('order-address')) document.getElementById('order-address').value = '';
+      try {
+        localStorage.setItem('pf_last_address', JSON.stringify(window.PF && window.PF.currentAddress));
+      } catch (e) {}
     } catch (e) {
       window.alert(e.message || 'Не удалось отправить заказ. Проверьте соединение и попробуйте снова.');
     } finally {
@@ -903,6 +998,329 @@
   }
 
   loadMenu();
+})();
+</script>
+<script>
+(function () {
+  window.PF = window.PF || {};
+  var DELIVERY_PRICE = 10000;
+  var PICKUP_PRICE = 0;
+  window.PF.currentDeliveryType = 'delivery';
+  window.PF.currentAddress = { lat: null, lon: null, text: '', apt: '', entrance: '', intercom: '', landmark: '' };
+  var savedAddresses = [];
+
+  try {
+    savedAddresses = JSON.parse(localStorage.getItem('pf_saved_addresses') || '[]');
+  } catch (e) {}
+
+  var deliveryToggle = document.getElementById('deliveryToggle');
+  var addressSection = document.getElementById('addressSection');
+  var orderAddress = document.getElementById('order-address');
+  var cartDelivery = document.getElementById('cart-delivery');
+  var cartTotal = document.getElementById('cart-total');
+
+  var addressModal = document.getElementById('addressModal');
+  var openAddressModal = document.getElementById('openAddressModal');
+  var closeAddressModal = document.getElementById('closeAddressModal');
+  var cancelAddress = document.getElementById('cancelAddress');
+  var saveAddress = document.getElementById('saveAddress');
+
+  var autoLocation = document.getElementById('autoLocation');
+  var manualLocation = document.getElementById('manualLocation');
+  var mapSection = document.getElementById('mapSection');
+  var manualSection = document.getElementById('manualSection');
+  var mapContainer = document.getElementById('mapContainer');
+
+  var manualAddressInput = document.getElementById('manualAddressInput');
+  var manualSuggestions = document.getElementById('manualSuggestions');
+  var aptInput = document.getElementById('aptInput');
+  var entranceInput = document.getElementById('entranceInput');
+  var intercomInput = document.getElementById('intercomInput');
+  var landmarkInput = document.getElementById('landmarkInput');
+
+  var confirmSection = document.getElementById('confirmSection');
+  var confirmAddressText = document.getElementById('confirmAddressText');
+  var savedAddressesList = document.getElementById('savedAddressesList');
+
+  function updateDeliveryPrice() {
+    var subtotal = parseInt(cartDelivery.textContent.replace(/[^0-9]/g, '')) || 0;
+    var delivery = window.PF.currentDeliveryType === 'delivery' ? DELIVERY_PRICE : PICKUP_PRICE;
+    var total = subtotal + delivery;
+    cartDelivery.textContent = (delivery ? delivery.toLocaleString('ru-RU').replace(/,/g, ' ') : '0') + ' сум';
+    cartTotal.textContent = total.toLocaleString('ru-RU').replace(/,/g, ' ') + ' сум';
+  }
+
+  if (deliveryToggle) {
+    deliveryToggle.addEventListener('click', function (e) {
+      var btn = e.target.closest('button');
+      if (!btn) return;
+      var type = btn.getAttribute('data-type');
+      if (type === window.PF.currentDeliveryType) return;
+      window.PF.currentDeliveryType = type;
+      Array.prototype.forEach.call(deliveryToggle.querySelectorAll('button'), function (b) {
+        b.classList.toggle('active', b.getAttribute('data-type') === type);
+      });
+      if (addressSection) {
+        addressSection.style.display = type === 'delivery' ? 'block' : 'none';
+      }
+      updateDeliveryPrice();
+    });
+  }
+
+  function openModal() {
+    if (addressModal) {
+      addressModal.classList.add('show');
+      renderSavedAddresses();
+    }
+  }
+
+  function closeModal() {
+    if (addressModal) {
+      addressModal.classList.remove('show');
+      resetModal();
+    }
+  }
+
+  function resetModal() {
+    mapSection.style.display = 'none';
+    manualSection.style.display = 'none';
+    confirmSection.style.display = 'none';
+    aptInput.value = '';
+    entranceInput.value = '';
+    intercomInput.value = '';
+    landmarkInput.value = '';
+    manualAddressInput.value = '';
+    window.PF.currentAddress = { lat: null, lon: null, text: '', apt: '', entrance: '', intercom: '', landmark: '' };
+  }
+
+  if (openAddressModal) openAddressModal.addEventListener('click', openModal);
+  if (closeAddressModal) closeAddressModal.addEventListener('click', closeModal);
+  if (cancelAddress) cancelAddress.addEventListener('click', closeModal);
+  if (addressModal) addressModal.addEventListener('click', function (e) {
+    if (e.target === addressModal) closeModal();
+  });
+
+  if (autoLocation) {
+    autoLocation.addEventListener('click', function () {
+      mapSection.style.display = 'block';
+      manualSection.style.display = 'none';
+      requestGeolocation();
+    });
+  }
+
+  if (manualLocation) {
+    manualLocation.addEventListener('click', function () {
+      manualSection.style.display = 'block';
+      mapSection.style.display = 'none';
+      manualAddressInput.focus();
+    });
+  }
+
+  function requestGeolocation() {
+    var tg = window.Telegram && window.Telegram.WebApp;
+    var lm = tg && tg.LocationManager;
+
+    if (lm && lm.isLocationAvailable && lm.isLocationAvailable()) {
+      lm.getLocation(function (loc) {
+        if (loc) {
+          window.PF.currentAddress.lat = loc.latitude;
+          window.PF.currentAddress.lon = loc.longitude;
+          reverseGeocode(loc.latitude, loc.longitude);
+        } else {
+          fallbackGeolocation();
+        }
+      });
+    } else {
+      fallbackGeolocation();
+    }
+  }
+
+  function fallbackGeolocation() {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        function (pos) {
+          window.PF.currentAddress.lat = pos.coords.latitude;
+          window.PF.currentAddress.lon = pos.coords.longitude;
+          reverseGeocode(pos.coords.latitude, pos.coords.longitude);
+        },
+        function (err) {
+          alert('Не удалось определить местоположение. Попробуйте ввести адрес вручную.');
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      );
+    } else {
+      alert('Геолокация не поддерживается. Введите адрес вручную.');
+    }
+  }
+
+  function reverseGeocode(lat, lon) {
+    var url = 'https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lon + '&accept-language=ru';
+    fetch(url).then(function (res) { return res.json(); })
+      .then(function (data) {
+        try {
+          var address = data.display_name || '';
+          window.PF.currentAddress.text = address;
+          showMap(lat, lon);
+          showConfirmation(address);
+        } catch (e) {
+          window.PF.currentAddress.text = lat.toFixed(5) + ', ' + lon.toFixed(5);
+          showMap(lat, lon);
+          showConfirmation(window.PF.currentAddress.text);
+        }
+      })
+      .catch(function () {
+        window.PF.currentAddress.text = lat.toFixed(5) + ', ' + lon.toFixed(5);
+        showMap(lat, lon);
+        showConfirmation(window.PF.currentAddress.text);
+      });
+  }
+
+  function showMap(lat, lon) {
+    mapContainer.innerHTML = '<iframe src="https://www.openstreetmap.org/export/embed.html?bbox=' + (lon - 0.01) + ',' + (lat - 0.01) + ',' + (lon + 0.01) + ',' + (lat + 0.01) + '&layer=mapnik&marker=' + lat + ',' + lon + '" width="100%" height="100%" frameborder="0"></iframe>';
+  }
+
+  function showConfirmation(address) {
+    confirmSection.style.display = 'block';
+    confirmAddressText.textContent = address;
+  }
+
+  if (manualAddressInput) {
+    manualAddressInput.addEventListener('input', function () {
+      var value = this.value.trim();
+      if (value.length < 3) {
+        manualSuggestions.style.display = 'none';
+        return;
+      }
+      fetchAddressSuggestions(value);
+    });
+
+    manualAddressInput.addEventListener('blur', function () {
+      setTimeout(function () { manualSuggestions.style.display = 'none'; }, 200);
+    });
+  }
+
+  function fetchAddressSuggestions(query) {
+    var url = 'https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(query) + '&limit=5&accept-language=ru&addressdetails=1';
+    fetch(url).then(function (res) { return res.json(); })
+      .then(function (data) {
+        try {
+          renderSuggestions(data);
+        } catch (e) {
+          manualSuggestions.style.display = 'none';
+        }
+      })
+      .catch(function () {
+        manualSuggestions.style.display = 'none';
+      });
+  }
+
+  function renderSuggestions(features) {
+    manualSuggestions.innerHTML = '';
+    if (!features || features.length === 0) {
+      manualSuggestions.style.display = 'none';
+      return;
+    }
+    features.forEach(function (feature) {
+      var address = feature.display_name || '';
+      var div = document.createElement('div');
+      div.className = 'address-suggestion';
+      div.innerHTML = '<b>' + address + '</b>';
+      div.addEventListener('click', function () {
+        manualAddressInput.value = address;
+        window.PF.currentAddress.text = address;
+        manualSuggestions.style.display = 'none';
+        try {
+          window.PF.currentAddress.lat = parseFloat(feature.lat);
+          window.PF.currentAddress.lon = parseFloat(feature.lon);
+        } catch (e) {}
+      });
+      manualSuggestions.appendChild(div);
+    });
+    manualSuggestions.style.display = 'block';
+  }
+
+  function renderSavedAddresses() {
+    savedAddressesList.innerHTML = '';
+    if (savedAddresses.length === 0) {
+      savedAddressesList.innerHTML = '<p class="muted center" style="padding:12px 0">Сохраненных адресов нет</p>';
+      return;
+    }
+    savedAddresses.forEach(function (addr, index) {
+      var div = document.createElement('div');
+      div.className = 'saved-address-item';
+      div.innerHTML = '<div class="saved-address-icon">📍</div><div class="saved-address-text"><b>' + addr.text + '</b><small>' + (addr.apt ? 'Кв. ' + addr.apt : '') + (addr.entrance ? ', Подъезд ' + addr.entrance : '') + '</small></div>';
+      div.addEventListener('click', function () {
+        selectSavedAddress(index);
+      });
+      savedAddressesList.appendChild(div);
+    });
+  }
+
+  function selectSavedAddress(index) {
+    var addr = savedAddresses[index];
+    window.PF.currentAddress = { ...addr };
+    aptInput.value = addr.apt || '';
+    entranceInput.value = addr.entrance || '';
+    intercomInput.value = addr.intercom || '';
+    landmarkInput.value = addr.landmark || '';
+    manualAddressInput.value = addr.text || '';
+    showConfirmation(addr.text);
+    Array.prototype.forEach.call(savedAddressesList.querySelectorAll('.saved-address-item'), function (item, i) {
+      item.classList.toggle('selected', i === index);
+    });
+  }
+
+  if (saveAddress) {
+    saveAddress.addEventListener('click', function () {
+      window.PF.currentAddress.apt = aptInput.value.trim();
+      window.PF.currentAddress.entrance = entranceInput.value.trim();
+      window.PF.currentAddress.intercom = intercomInput.value.trim();
+      window.PF.currentAddress.landmark = landmarkInput.value.trim();
+      window.PF.currentAddress.text = window.PF.currentAddress.text || manualAddressInput.value.trim();
+
+      if (!window.PF.currentAddress.text) {
+        alert('Укажите адрес');
+        return;
+      }
+
+      var fullAddress = window.PF.currentAddress.text;
+      if (window.PF.currentAddress.apt) fullAddress += ', кв. ' + window.PF.currentAddress.apt;
+      if (window.PF.currentAddress.entrance) fullAddress += ', подъезд ' + window.PF.currentAddress.entrance;
+      if (window.PF.currentAddress.intercom) fullAddress += ', домофон: ' + window.PF.currentAddress.intercom;
+      if (window.PF.currentAddress.landmark) fullAddress += ' (' + window.PF.currentAddress.landmark + ')';
+
+      if (orderAddress) orderAddress.value = fullAddress;
+
+      var existingIndex = savedAddresses.findIndex(function (a) {
+        return a.text === window.PF.currentAddress.text;
+      });
+
+      if (existingIndex >= 0) {
+        savedAddresses[existingIndex] = { ...window.PF.currentAddress };
+      } else {
+        savedAddresses.push({ ...window.PF.currentAddress });
+        if (savedAddresses.length > 5) savedAddresses.shift();
+      }
+
+      try {
+        localStorage.setItem('pf_saved_addresses', JSON.stringify(savedAddresses));
+      } catch (e) {}
+
+      closeModal();
+    });
+  }
+
+  function restoreSavedAddress() {
+    try {
+      var last = JSON.parse(localStorage.getItem('pf_last_address') || 'null');
+      if (last && last.text && orderAddress) {
+        orderAddress.value = last.text;
+        window.PF.currentAddress = last;
+      }
+    } catch (e) {}
+  }
+
+  restoreSavedAddress();
 })();
 </script>
 <script>
