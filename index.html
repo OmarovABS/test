@@ -692,8 +692,16 @@
   if (!banner) return;
   var track = banner.querySelector('.banner-track');
   var slides = track.children;
-  var dots = banner.querySelectorAll('.banner-dots span');
+  var dotsWrap = banner.querySelector('.banner-dots');
   var total = slides.length;
+  for (var di = 0; di < total; di++) {
+    var dotEl = document.createElement('span');
+    dotEl.addEventListener('click', function (i) {
+      return function () { show(i); start(); };
+    }(di));
+    dotsWrap.appendChild(dotEl);
+  }
+  var dots = dotsWrap.querySelectorAll('span');
   var index = 0;
   var timer = null;
   var DELAY = 4000;
@@ -1032,57 +1040,6 @@
   }
 
   loadMenu();
-
-  var banner = document.getElementById('banner');
-  var bannerTrack = document.querySelector('.banner-track');
-  var bannerSlides = document.querySelectorAll('.banner-slide');
-  var bannerDots = document.getElementById('bannerDots');
-  var currentSlide = 0;
-  var slideInterval;
-
-  if (banner && bannerSlides.length > 0 && bannerDots) {
-    for (var i = 0; i < bannerSlides.length; i++) {
-      var dot = document.createElement('span');
-      dot.addEventListener('click', function (index) {
-        return function () {
-          goToSlide(index);
-        };
-      }(i));
-      bannerDots.appendChild(dot);
-    }
-    updateDots();
-    startSlideShow();
-
-    banner.addEventListener('touchstart', function () {
-      clearInterval(slideInterval);
-    });
-    banner.addEventListener('touchend', startSlideShow);
-  }
-
-  function goToSlide(index) {
-    currentSlide = index;
-    if (bannerTrack) {
-      bannerTrack.style.transform = 'translateX(' + (currentSlide * 100) + '%)';
-    }
-    updateDots();
-  }
-
-  function nextSlide() {
-    currentSlide = (currentSlide + 1) % bannerSlides.length;
-    goToSlide(currentSlide);
-  }
-
-  function updateDots() {
-    var dots = bannerDots.querySelectorAll('span');
-    Array.prototype.forEach.call(dots, function (dot, i) {
-      dot.classList.toggle('on', i === currentSlide);
-    });
-  }
-
-  function startSlideShow() {
-    clearInterval(slideInterval);
-    slideInterval = setInterval(nextSlide, 4000);
-  }
 })();
 </script>
 <script>
