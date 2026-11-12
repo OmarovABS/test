@@ -20,6 +20,8 @@
 .pf-admin-tab { border:0; border-bottom:2px solid transparent; padding:10px 12px; color:var(--pf-muted); background:none; font:inherit; font-size:14px; font-weight:600; cursor:pointer; }
 .pf-admin-tab.active { border-color:var(--pf-brand); color:var(--pf-brand); }
 .pf-admin-list { display:grid; gap:10px; }
+.pf-admin-cat { margin:14px 2px 2px; font-size:13px; font-weight:700; letter-spacing:.02em; color:var(--pf-muted); text-transform:uppercase; }
+.pf-admin-cat:first-child { margin-top:0; }
 .pf-admin-product,.pf-admin-order { display:flex; align-items:center; gap:14px; border:1px solid var(--pf-line); border-radius:14px; padding:12px; }
 .pf-admin-product img { width:68px; height:68px; flex:none; border-radius:12px; object-fit:cover; background:#f1f3f6; }
 .pf-admin-product-main { min-width:0; flex:1; }
@@ -40,10 +42,18 @@
 #pf-admin-toast { position:fixed; left:50%; bottom:22px; transform:translateX(-50%); background:#17202b; color:white; padding:11px 16px; border-radius:10px; z-index:10001; display:none; max-width:calc(100vw - 32px); }
 #pf-admin-modal { position:fixed; inset:0; z-index:10000; display:none; place-items:center; padding:16px; background:#101a2b80; }
 #pf-admin-modal.open { display:grid; }
-#pf-admin-lock { position:fixed; inset:0; z-index:10002; display:none; place-items:center; padding:16px; background:#101a2b80; }
+#pf-admin-lock { position:fixed; inset:0; z-index:10002; display:none; place-items:center; padding:20px; background:linear-gradient(160deg,#0f1c33 0%,#1b2f55 55%,#0d1830 100%); }
 #pf-admin-lock.open { display:grid; }
-#pf-admin-lock .pf-admin-dialog { width:min(360px,100%); }
-#pf-admin-lock-error { display:none; margin-top:10px; color:#c73333; font-size:12px; font-weight:600; }
+#pf-admin-lock .pf-admin-dialog { width:min(400px,100%); border-radius:22px; padding:34px 30px 30px; text-align:center; box-shadow:0 30px 90px #0007; }
+#pf-admin-lock .pf-admin-dialog h2 { font-size:24px; margin-bottom:6px; }
+#pf-admin-lock .pf-admin-sub { margin:0 0 20px; color:var(--pf-muted); font-size:13px; }
+#pf-admin-lock .pf-admin-field { text-align:left; }
+#pf-admin-lock .pf-admin-field input { text-align:center; font-size:20px; letter-spacing:.35em; padding:14px 12px; }
+#pf-admin-lock .pf-admin-modal-actions { margin-top:18px; }
+#pf-admin-lock .pf-admin-modal-actions .pf-admin-btn { width:100%; padding:14px; font-size:15px; }
+#pf-admin-lock-back { display:block; width:100%; margin-top:12px; padding:12px; border:0; border-radius:11px; background:transparent; color:#9fb2d8; font:inherit; font-size:13px; font-weight:600; cursor:pointer; }
+#pf-admin-lock-back:hover { color:#fff; }
+#pf-admin-lock-error { display:none; margin-top:12px; color:#c73333; font-size:12px; font-weight:600; }
 .pf-admin-dialog { width:min(520px,100%); max-height:90vh; overflow:auto; border-radius:18px; padding:22px; background:#fff; box-shadow:0 24px 80px #0003; }
 .pf-admin-dialog h2 { margin:0 0 16px; font-size:22px; }
 .pf-admin-form { display:grid; gap:12px; }
@@ -91,11 +101,13 @@
     </form>
   </div></div>
   <div id="pf-admin-lock" role="dialog" aria-modal="true"><div class="pf-admin-dialog">
-    <h2>Вход в админку</h2>
+    <h2>🔐 Вход в админку</h2>
+    <p class="pf-admin-sub">Введите пароль для доступа к панели управления</p>
     <form id="pf-admin-lock-form" class="pf-admin-form">
       <label class="pf-admin-field">Пароль<input name="password" type="password" required autocomplete="off" autofocus></label>
       <div class="pf-admin-modal-actions"><button class="pf-admin-btn" type="submit">Войти</button></div>
     </form>
+    <button type="button" id="pf-admin-lock-back">На витрину</button>
     <div id="pf-admin-lock-error">Неверный пароль</div>
   </div></div>
   <div id="pf-admin-toast" role="status"></div>

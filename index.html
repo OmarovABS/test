@@ -747,7 +747,8 @@
       name: product.name,
       description: product.description,
       price: product.price,
-      image: product.image_url
+      image: product.image_url,
+      isActive: product.is_active !== 0 && product.is_active !== false
     };
   }
   function requestMenu() {
@@ -774,7 +775,7 @@
       for (var i = 0; i < products.length; i++) {
         if ((pid && products[i].id === pid) || products[i].name === name) { found = products[i]; break; }
       }
-      if (!found) {
+      if (!found || found.isActive === false) {
         api.remove(name);
         messages.push('позиция ' + name + ' закончилась');
       } else if (found.price !== item.price) {
@@ -862,7 +863,7 @@
 
   function productCard(p) {
     var card = document.createElement('div');
-    card.className = 'p';
+    card.className = 'p' + (p.isActive === false ? ' off' : '');
 
     var img = document.createElement('div');
     img.className = 'img';
@@ -889,7 +890,8 @@
     btn.type = 'button';
     btn.className = 'btn add';
     btn.setAttribute('data-pid', p.id);
-    btn.textContent = 'Добавить';
+    btn.textContent = p.isActive === false ? 'Нет в наличии' : 'Добавить';
+    if (p.isActive === false) btn.disabled = true;
     body.appendChild(b);
     body.appendChild(small);
     body.appendChild(price);
@@ -903,6 +905,6 @@
   loadMenu();
 })();
 </script>
-<script src="admin.js?v=2" defer></script>
+<script src="admin.js?v=5" defer></script>
 </body>
 </html>

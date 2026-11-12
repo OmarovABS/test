@@ -81,7 +81,7 @@ def _store_menu_version(version: int) -> None:
 def refresh_menu_cache() -> None:
     with connect_db() as connection:
         rows = connection.execute(
-            "SELECT id, name, description, price, category, image_url FROM products WHERE is_active=1 ORDER BY category, id"
+            "SELECT id, name, description, price, category, image_url, is_active FROM products ORDER BY category, id"
         ).fetchall()
     products = [product_payload(row) for row in rows]
     for product in products:

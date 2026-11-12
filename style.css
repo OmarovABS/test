@@ -164,8 +164,13 @@ h3{display:inline-flex;align-items:center;font-size:14px;font-weight:500;color:v
 .btn.add.done::after{content:"✓";display:block;font-size:19px;font-weight:700;line-height:1}
 @media (hover:hover){.btn.add.done:hover{background:rgba(0,113,227,.12);color:var(--primary)}}
 #dark:checked~.app .btn.add.done,#dark:checked~.app .btn.add.done:hover{background:rgba(41,151,255,.18);color:var(--primary)}
-.p.off{opacity:.45}
-.p.off .btn{pointer-events:none;color:var(--muted);background:var(--sec)}
+.p.off{opacity:.6}
+.p.off{opacity:.6}
+.p.off .img::after{content:"";position:absolute;inset:0;background:rgba(255,59,48,.20);pointer-events:none}
+.p.off .img img{filter:saturate(.35) brightness(.92)}
+.p.off .price{color:#ff3b30}
+.p.off .btn{pointer-events:none;color:#fff;background:#ff3b30;font-weight:600}
+@media (hover:hover){.p.off:hover{transform:none;box-shadow:var(--shadow)}}
 .list{
   background:var(--card);border-radius:var(--r);overflow:hidden;
   border:.5px solid var(--border);box-shadow:var(--shadow);

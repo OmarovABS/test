@@ -45,10 +45,16 @@
     toast.timer = setTimeout(function () { element.style.display = 'none'; }, 3000);
   }
 
-  var LOCK_KEY = 'pf_admin_unlocked';
+  var LOCK_KEY = 'pf_admin_unlocked_at';
+  var LOCK_TTL_MS = 15 * 60 * 1000;
 
   function isUnlocked() {
-    try { return sessionStorage.getItem(LOCK_KEY) === '1'; } catch (e) { return false; }
+    try {
+      var unlockedAt = Number(localStorage.getItem(LOCK_KEY) || 0);
+      if (unlockedAt && Date.now() - unlockedAt < LOCK_TTL_MS) return true;
+      localStorage.removeItem(LOCK_KEY);
+    } catch (e) {}
+    return false;
   }
 
   function showLock() {
@@ -98,16 +104,28 @@
         list.innerHTML = '<div class="pf-admin-empty">В меню пока нет блюд.</div>';
         return;
       }
-      list.innerHTML = products.map(function (product) {
-        var image = product.image_url || '';
-        return '<article class="pf-admin-product" data-id="' + Number(product.id) + '">' +
-          (image ? '<img src="' + escapeHtml(image) + '" alt="">' : '<img src="" alt="Нет фото">') +
-          '<div class="pf-admin-product-main"><strong>' + escapeHtml(product.name) + '</strong>' +
-          '<small>' + escapeHtml(product.category) + ' · ' + money(product.price) + '</small></div>' +
-          '<div class="pf-admin-controls"><label class="pf-admin-toggle-switch"><input type="checkbox" data-action="active" ' + (product.is_active ? 'checked' : '') + '><span>' + (product.is_active ? 'В наличии' : 'Стоп-лист') + '</span></label>' +
-          '<button class="pf-admin-mini" type="button" data-action="edit">Редактировать</button>' +
-          '<button class="pf-admin-mini danger" type="button" data-action="delete">Удалить</button></div></article>';
-      }).join('');
+      var byCategory = {};
+      var categories = [];
+      products.forEach(function (product) {
+        var cat = product.category || 'Без категории';
+        if (!byCategory[cat]) { byCategory[cat] = []; categories.push(cat); }
+        byCategory[cat].push(product);
+      });
+      var html = '';
+      categories.forEach(function (cat) {
+        html += '<div class="pf-admin-cat">' + escapeHtml(cat) + '</div>';
+        html += byCategory[cat].map(function (product) {
+          var image = product.image_url || '';
+          return '<article class="pf-admin-product" data-id="' + Number(product.id) + '">' +
+            (image ? '<img src="' + escapeHtml(image) + '" alt="">' : '<img src="" alt="Нет фото">') +
+            '<div class="pf-admin-product-main"><strong>' + escapeHtml(product.name) + '</strong>' +
+            '<small>' + money(product.price) + '</small></div>' +
+            '<div class="pf-admin-controls"><label class="pf-admin-toggle-switch"><input type="checkbox" data-action="active" ' + (product.is_active ? 'checked' : '') + '><span>' + (product.is_active ? 'В наличии' : 'Нет в наличии') + '</span></label>' +
+            '<button class="pf-admin-mini" type="button" data-action="edit">Редактировать</button>' +
+            '<button class="pf-admin-mini danger" type="button" data-action="delete">Удалить</button></div></article>';
+        }).join('');
+      });
+      list.innerHTML = html;
       products.forEach(function (product) {
         var row = list.querySelector('[data-id="' + Number(product.id) + '"]');
         if (row) row.__product = product;
@@ -178,6 +196,11 @@
     var lockForm = document.getElementById('pf-admin-lock-form');
     if (toggleBtn) toggleBtn.addEventListener('click', openAdmin);
     if (exitBtn) exitBtn.addEventListener('click', function () { setAdminView(false); });
+    var lockBack = document.getElementById('pf-admin-lock-back');
+    if (lockBack) lockBack.addEventListener('click', function () {
+      document.getElementById('pf-admin-lock').classList.remove('open');
+      setAdminView(false);
+    });
     if (lockForm) lockForm.addEventListener('submit', async function (event) {
       event.preventDefault();
       var input = event.currentTarget.elements.password;
@@ -188,7 +211,7 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ password: input.value })
         });
-        try { sessionStorage.setItem(LOCK_KEY, '1'); } catch (e) {}
+        try { localStorage.setItem(LOCK_KEY, String(Date.now())); } catch (e) {}
         document.getElementById('pf-admin-lock').classList.remove('open');
         setAdminView(true);
       } catch (err) {
@@ -234,9 +257,9 @@
           method: 'PUT', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ is_active: input.checked })
         });
-        label.textContent = input.checked ? 'В наличии' : 'Стоп-лист';
+        label.textContent = input.checked ? 'В наличии' : 'Нет в наличии';
         row.__product.is_active = input.checked;
-        toast(input.checked ? 'Блюдо снова доступно' : 'Блюдо добавлено в стоп-лист');
+        toast(input.checked ? 'Блюдо снова доступно' : 'Блюдо снято с продажи');
       } catch (error) {
         input.checked = !input.checked;
         toast(error.message);
