@@ -92,7 +92,7 @@ header h1{font-size:21px;font-weight:600;letter-spacing:-.025em}
 h2{font-size:40px;font-weight:700;letter-spacing:-.04em;line-height:1.05;margin:14px 0 6px}
 .lead{color:var(--muted);font-size:17px;line-height:1.45;margin:0 0 18px;letter-spacing:-.01em;max-width:34ch}
 h3[id]{scroll-margin-top:170px}
-.banner{position:relative;width:100%;aspect-ratio:5/2;overflow:hidden;margin:0 0 18px;border-radius:16px;box-shadow:var(--shadow);background:var(--sec);touch-action:pan-y}
+.banner{position:relative;width:100%;aspect-ratio:5/2;overflow:hidden;margin:0 0 12px;border-radius:16px;box-shadow:var(--shadow);background:var(--sec);touch-action:pan-y}
 .banner-track{display:flex;height:100%;transition:transform .55s cubic-bezier(.22,.8,.24,1);will-change:transform}
 .banner-slide{flex:0 0 100%;height:100%}
 .banner-slide img{display:block;width:100%;height:100%;object-fit:cover}
