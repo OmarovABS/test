@@ -152,8 +152,12 @@
 </div>
 
 <div class="confirm-address" id="confirmSection" style="display:none">
-<h4>Подтвердите адрес</h4>
+<h4>Это ваш адрес?</h4>
 <p id="confirmAddressText"></p>
+<div class="address-actions">
+<button type="button" class="btn-secondary" id="editAddressBtn">Редактировать</button>
+<button type="button" class="btn-primary" id="confirmAddressBtn">Верно</button>
+</div>
 </div>
 
 <div class="saved-addresses" id="savedAddressesList"></div>
@@ -1096,6 +1100,8 @@
   var confirmSection = document.getElementById('confirmSection');
   var confirmAddressText = document.getElementById('confirmAddressText');
   var savedAddressesList = document.getElementById('savedAddressesList');
+  var editAddressBtn = document.getElementById('editAddressBtn');
+  var confirmAddressBtn = document.getElementById('confirmAddressBtn');
 
   function updateDeliveryPrice() {
     var subtotal = parseInt(cartDelivery.textContent.replace(/[^0-9]/g, '')) || 0;
@@ -1209,24 +1215,34 @@
   }
 
   function reverseGeocode(lat, lon) {
-    var url = 'https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lon + '&accept-language=ru';
+    var url = 'https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lon + '&accept-language=ru&addressdetails=1';
     fetch(url).then(function (res) { return res.json(); })
       .then(function (data) {
         try {
-          var address = data.display_name || '';
+          var addr = data.address || {};
+          var parts = [];
+          if (addr.road) parts.push(addr.road);
+          if (addr.house_number) parts.push('д. ' + addr.house_number);
+          if (addr.city) parts.push(addr.city);
+          else if (addr.town) parts.push(addr.town);
+          else if (addr.village) parts.push(addr.village);
+          if (addr.state) parts.push(addr.state);
+          if (addr.country) parts.push(addr.country);
+
+          var address = parts.length > 0 ? parts.join(', ') : data.display_name || '';
           window.PF.currentAddress.text = address;
           showMap(lat, lon);
-          showConfirmation(address);
+          showAddressConfirmation(address);
         } catch (e) {
           window.PF.currentAddress.text = lat.toFixed(5) + ', ' + lon.toFixed(5);
           showMap(lat, lon);
-          showConfirmation(window.PF.currentAddress.text);
+          showAddressConfirmation(window.PF.currentAddress.text);
         }
       })
       .catch(function () {
         window.PF.currentAddress.text = lat.toFixed(5) + ', ' + lon.toFixed(5);
         showMap(lat, lon);
-        showConfirmation(window.PF.currentAddress.text);
+        showAddressConfirmation(window.PF.currentAddress.text);
       });
   }
 
@@ -1237,6 +1253,28 @@
   function showConfirmation(address) {
     confirmSection.style.display = 'block';
     confirmAddressText.textContent = address;
+  }
+
+  function showAddressConfirmation(address) {
+    confirmSection.style.display = 'block';
+    confirmAddressText.textContent = address;
+  }
+
+  if (editAddressBtn) {
+    editAddressBtn.addEventListener('click', function () {
+      confirmSection.style.display = 'none';
+      manualSection.style.display = 'block';
+      mapSection.style.display = 'none';
+      manualAddressInput.value = window.PF.currentAddress.text || '';
+      manualAddressInput.focus();
+    });
+  }
+
+  if (confirmAddressBtn) {
+    confirmAddressBtn.addEventListener('click', function () {
+      confirmSection.style.display = 'none';
+      showConfirmation(window.PF.currentAddress.text);
+    });
   }
 
   if (manualAddressInput) {
