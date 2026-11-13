@@ -446,7 +446,7 @@ def admin_orders(_: dict[str, Any] = Depends(require_admin)) -> dict[str, Any]:
     with connect_db() as connection:
         orders = connection.execute("SELECT * FROM orders ORDER BY id DESC LIMIT 50").fetchall()
         stats = connection.execute(
-            "SELECT COUNT(*) AS count, COALESCE(SUM(total_price), 0) AS revenue FROM orders WHERE substr(created_at, 1, 10)=?",
+            "SELECT COUNT(*) AS count, COALESCE(SUM(total_price), 0) AS revenue FROM orders WHERE substr(CAST(created_at AS TEXT), 1, 10)=?",
             (today,),
         ).fetchone()
     result = []

@@ -692,7 +692,8 @@
   if (!banner) return;
   var track = banner.querySelector('.banner-track');
   var slides = track.children;
-  var dotsWrap = banner.querySelector('.banner-dots');
+  var dotsWrap = document.getElementById('bannerDots');
+  if (!dotsWrap) return;
   var total = slides.length;
   for (var di = 0; di < total; di++) {
     var dotEl = document.createElement('span');
@@ -1549,11 +1550,12 @@
     if (tg && tg.initData) headers['X-Telegram-Init-Data'] = tg.initData;
     try {
       var response = await fetch('/api/orders/mine', { headers: headers, cache: 'no-store' });
-      if (!response.ok) throw new Error('load failed');
-      var data = await response.json();
+      var data = {};
+      try { data = await response.json(); } catch (e) {}
+      if (!response.ok) throw new Error(data.detail || ('Ошибка ' + response.status));
       render(data.orders || []);
     } catch (e) {
-      list.innerHTML = '<div class="row"><div class="grow">Не удалось загрузить заказы. Попробуйте позже.</div></div>';
+      list.innerHTML = '<div class="row"><div class="grow">Не удалось загрузить заказы: ' + esc(e.message || '') + '</div></div>';
     }
   }
 
