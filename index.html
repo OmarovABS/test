@@ -560,7 +560,7 @@
       });
       var result = {};
       try { result = await response.json(); } catch (e) {}
-      if (!response.ok) throw new Error(result.detail || 'Не удалось оформить заказ.');
+      if (!response.ok) throw new Error((result.detail || 'Не удалось оформить заказ.') + ' (код ' + response.status + ')');
       if (!result.notification_sent) {
         window.alert('Заказ сохранён, но сейчас ресторан не получил уведомление. Пожалуйста, свяжитесь с нами для подтверждения.');
       } else {
