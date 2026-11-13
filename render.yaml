@@ -9,14 +9,22 @@ services:
       - key: PYTHON_VERSION
         value: 3.12.0
       - key: DEBUG_MODE
-        value: "True"
+        value: "False"
       - key: SKIP_AUTH_CHECK
-        value: "True"
-      - key: DATABASE_PATH
-        value: delivery.db
+        value: "False"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: premium-food-db
+          property: connectionString
       - key: BOT_TOKEN
         sync: false
       - key: ADMIN_ID
+        sync: false
+      - key: ADMIN_IDS
+        sync: false
+      - key: ADMIN_CHAT_ID
+        sync: false
+      - key: ADMIN_PANEL_PASSWORD
         sync: false
       - key: MINI_APP_URL
         sync: false
@@ -24,3 +32,9 @@ services:
         sync: false
       - key: RESTAURANT_NAME
         value: Premium Food
+
+databases:
+  - name: premium-food-db
+    plan: free
+    databaseName: premium_food
+    user: premium_food
