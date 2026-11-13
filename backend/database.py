@@ -12,40 +12,75 @@ USE_POSTGRES = DATABASE_URL.startswith("postgresql://") or DATABASE_URL.startswi
 
 if USE_POSTGRES:
     import psycopg2
-    from psycopg2 import sql
     from psycopg2.extras import RealDictCursor
 else:
     _configured_db_path = Path(os.getenv("DATABASE_PATH", "delivery.db"))
     DB_PATH = (_configured_db_path if _configured_db_path.is_absolute() else BASE_DIR / _configured_db_path).resolve()
 
-SEED_PRODUCTS = (
-    (1, "Донар классик", "Говядина, свежие овощи, лаваш", 32000, "Донар", "/images/donar-klassik.jpg"),
-    (2, "Донар куриный", "Курица на гриле, соус, салат", 28000, "Донар", "/images/donar-kurinyy.jpg"),
-    (3, "Донар XL", "Двойная порция мяса и сыр", 42000, "Донар", "/images/donar-xl.jpg"),
-    (4, "Чизбургер", "Говяжья котлета, чеддер, томат", 35000, "Бургер", "/images/chizburger.jpg"),
-    (5, "Биг бургер", "Две котлеты, лук, фирменный соус", 48000, "Бургер", "/images/big-burger.jpg"),
-    (6, "Хот-дог классик", "Сосиска, горчица, булочка бриошь", 18000, "Хот-дог", "/images/hot-dog-klassik.jpg"),
-    (7, "Хот-дог датский", "Хрустящий лук, огурчики", 22000, "Хот-дог", "/images/hot-dog-datskiy.jpg"),
-    (8, "Лимонад", "Лимон, мята, лёд", 15000, "Напитки", "/images/limonad.jpg"),
-    (9, "Айран", "Освежающий, домашний", 9000, "Напитки", "/images/ayran.jpg"),
-    (10, "Пепперони", "Пепперони, моцарелла, томатный соус", 75000, "Пицца", "/images/pepperoni.jpg"),
-    (11, "Маргарита", "Моцарелла, томаты, базилик", 62000, "Пицца", "/images/margarita.jpg"),
-)
+
+class _PgCursor:
+    """Thin wrapper adding sqlite-style lastrowid to a psycopg2 cursor."""
+
+    def __init__(self, cursor: Any, returning_id: Any = None) -> None:
+        self._cursor = cursor
+        self._returning_id = returning_id
+
+    @property
+    def lastrowid(self) -> Any:
+        return self._returning_id
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self._cursor, name)
+
+
+class _PgConnection:
+    """SQLite-style execute() adapter over a psycopg2 connection."""
+
+    def __init__(self, raw: Any) -> None:
+        self._raw = raw
+
+    def cursor(self, *args: Any, **kwargs: Any) -> Any:
+        return self._raw.cursor(*args, **kwargs)
+
+    def execute(self, query: str, params: Any = ()) -> _PgCursor:
+        stripped = query.lstrip()
+        is_insert = stripped.upper().startswith("INSERT")
+        has_returning = "RETURNING" in query.upper()
+        sql = query.replace("?", "%s")
+        if is_insert and not has_returning:
+            sql = sql.rstrip().rstrip(";") + " RETURNING id"
+        cursor = self._raw.cursor(cursor_factory=RealDictCursor)
+        cursor.execute(sql, params or ())
+        returning_id = None
+        if is_insert and not has_returning:
+            row = cursor.fetchone()
+            returning_id = row["id"] if row else None
+        return _PgCursor(cursor, returning_id)
+
+    def commit(self) -> None:
+        self._raw.commit()
+
+    def rollback(self) -> None:
+        self._raw.rollback()
+
+    def close(self) -> None:
+        self._raw.close()
 
 
 @contextmanager
 def connect_db() -> Generator[Any, None, None]:
     if USE_POSTGRES:
-        connection = psycopg2.connect(DATABASE_URL)
-        connection.autocommit = False
+        raw = psycopg2.connect(DATABASE_URL)
+        raw.autocommit = False
+        connection = _PgConnection(raw)
         try:
             yield connection
-            connection.commit()
+            raw.commit()
         except Exception:
-            connection.rollback()
+            raw.rollback()
             raise
         finally:
-            connection.close()
+            raw.close()
     else:
         DB_PATH.parent.mkdir(parents=True, exist_ok=True)
         connection = sqlite3.connect(DB_PATH, timeout=5.0)
@@ -61,6 +96,21 @@ def connect_db() -> Generator[Any, None, None]:
             raise
         finally:
             connection.close()
+
+
+SEED_PRODUCTS = (
+    (1, "Донар классик", "Говядина, свежие овощи, лаваш", 32000, "Донар", "/images/donar-klassik.jpg"),
+    (2, "Донар куриный", "Курица на гриле, соус, салат", 28000, "Донар", "/images/donar-kurinyy.jpg"),
+    (3, "Донар XL", "Двойная порция мяса и сыр", 42000, "Донар", "/images/donar-xl.jpg"),
+    (4, "Чизбургер", "Говяжья котлета, чеддер, томат", 35000, "Бургер", "/images/chizburger.jpg"),
+    (5, "Биг бургер", "Две котлеты, лук, фирменный соус", 48000, "Бургер", "/images/big-burger.jpg"),
+    (6, "Хот-дог классик", "Сосиска, горчица, булочка бриошь", 18000, "Хот-дог", "/images/hot-dog-klassik.jpg"),
+    (7, "Хот-дог датский", "Хрустящий лук, огурчики", 22000, "Хот-дог", "/images/hot-dog-datskiy.jpg"),
+    (8, "Лимонад", "Лимон, мята, лёд", 15000, "Напитки", "/images/limonad.jpg"),
+    (9, "Айран", "Освежающий, домашний", 9000, "Напитки", "/images/ayran.jpg"),
+    (10, "Пепперони", "Пепперони, моцарелла, томатный соус", 75000, "Пицца", "/images/pepperoni.jpg"),
+    (11, "Маргарита", "Моцарелла, томаты, базилик", 62000, "Пицца", "/images/margarita.jpg"),
+)
 
 
 def init_db() -> None:
