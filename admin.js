@@ -117,7 +117,7 @@
         html += byCategory[cat].map(function (product) {
           var image = product.image_url || '';
           return '<article class="pf-admin-product" data-id="' + Number(product.id) + '">' +
-            (image ? '<img src="' + escapeHtml(image) + '" alt="">' : '<img src="" alt="Нет фото">') +
+            (image ? '<img src="' + escapeHtml(image) + '" alt="" loading="lazy" decoding="async">' : '<img src="" alt="Нет фото">') +
             '<div class="pf-admin-product-main"><strong>' + escapeHtml(product.name) + '</strong>' +
             '<small>' + money(product.price) + '</small></div>' +
             '<div class="pf-admin-controls"><label class="pf-admin-toggle-switch"><input type="checkbox" data-action="active" ' + (product.is_active ? 'checked' : '') + '><span>' + (product.is_active ? 'В наличии' : 'Нет в наличии') + '</span></label>' +

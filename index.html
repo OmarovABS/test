@@ -14,8 +14,12 @@
 <input type="radio" name="tab" id="t-profile">
 <input type="checkbox" class="hide" id="dark">
 <div class="app">
-<header>
-<div class="head-top"><h1>Premium Food</h1><label for="dark" class="theme" title="Тема"></label></div>
+<header id="siteHeader">
+<div class="head-top">
+<button type="button" class="head-avatar" id="headAvatarBtn" aria-label="Открыть профиль"><span id="headAvatar">А</span></button>
+<h1>Premium Food</h1>
+<label for="dark" class="theme" title="Тема"></label>
+</div>
 <div class="restaurant-status">
 <span class="status-dot"></span>
 <span class="status-text">Открыто • 10:00 - 23:00</span>
@@ -30,9 +34,9 @@
 <section class="screen" id="menu">
 <div class="banner" id="banner">
 <div class="banner-track">
-<div class="banner-slide"><img src="images/banner.jpg" alt="Premium Food — доставка еды"></div>
-<div class="banner-slide"><img src="images/banner2.jpg" alt=""></div>
-<div class="banner-slide"><img src="images/banner3.jpg" alt=""></div>
+<div class="banner-slide"><img src="images/banner.jpg" alt="Premium Food — доставка еды" loading="eager" decoding="async"></div>
+<div class="banner-slide"><img src="images/banner2.jpg" alt="" loading="lazy" decoding="async"></div>
+<div class="banner-slide"><img src="images/banner3.jpg" alt="" loading="lazy" decoding="async"></div>
 </div>
 </div>
 <div class="banner-dots" id="bannerDots"></div>
@@ -372,6 +376,8 @@
       var thumb = document.createElement('img');
       thumb.src = item.src;
       thumb.alt = item.name;
+      thumb.loading = 'lazy';
+      thumb.decoding = 'async';
       img.appendChild(thumb);
     } else {
       img.textContent = item.emoji;
@@ -760,12 +766,21 @@
   var nameEl = document.querySelector('.prof-name');
   var userEl = document.querySelector('.prof-username');
   var avatarEl = document.querySelector('.prof-avatar');
+  var headAvatarEl = document.getElementById('headAvatar');
 
   function setProfileName(name) {
     if (!nameEl || !name) return;
     nameEl.textContent = name;
-    if (avatarEl) avatarEl.textContent = name.trim().charAt(0).toUpperCase();
+    var initial = name.trim().charAt(0).toUpperCase();
+    if (avatarEl) avatarEl.textContent = initial;
+    if (headAvatarEl) headAvatarEl.textContent = initial;
   }
+
+  var headAvatarBtn = document.getElementById('headAvatarBtn');
+  if (headAvatarBtn) headAvatarBtn.addEventListener('click', function () {
+    var profileTab = document.getElementById('t-profile');
+    if (profileTab) profileTab.checked = true;
+  });
 
   var tgUser = tg && tg.initDataUnsafe && tg.initDataUnsafe.user;
   var userId = tgUser && tgUser.id ? String(tgUser.id) : 'guest';
@@ -1010,6 +1025,7 @@
       im.src = p.image;
       im.alt = p.name;
       im.loading = 'lazy';
+      im.decoding = 'async';
       img.appendChild(im);
     } else {
       img.textContent = '🍔';
@@ -1563,6 +1579,35 @@
   load();
 })();
 </script>
-<script src="admin.js?v=6" defer></script>
+<script>
+(function () {
+  var header = document.getElementById('siteHeader');
+  if (!header) return;
+  var lastY = window.pageYOffset || 0;
+  var hidden = false;
+  var ticking = false;
+
+  function update() {
+    var y = window.pageYOffset || 0;
+    if (y <= 10) {
+      if (hidden) { hidden = false; document.documentElement.classList.remove('header-hidden'); }
+    } else if (y > lastY + 4 && y > 140 && !hidden) {
+      hidden = true;
+      document.documentElement.classList.add('header-hidden');
+    } else if (y < lastY - 4 && hidden) {
+      hidden = false;
+      document.documentElement.classList.remove('header-hidden');
+    }
+    lastY = y;
+  }
+
+  window.addEventListener('scroll', function () {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(function () { update(); ticking = false; });
+  }, { passive: true });
+})();
+</script>
+<script src="admin.js?v=7" defer></script>
 </body>
 </html>
