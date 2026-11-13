@@ -291,6 +291,9 @@
       template.innerHTML = markup;
       root = template.content;
       document.body.appendChild(root);
+      var nav = document.querySelector('nav');
+      var toggleBtn = document.getElementById('pf-admin-toggle');
+      if (nav && toggleBtn) nav.appendChild(toggleBtn);
       var me = await api('/api/me');
       adminUser = Boolean(me.is_admin);
       if (!adminUser) {
