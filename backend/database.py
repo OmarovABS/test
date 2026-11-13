@@ -134,10 +134,10 @@ def init_db() -> None:
                 """
                 CREATE TABLE IF NOT EXISTS orders (
                     id SERIAL PRIMARY KEY,
-                    user_id INTEGER NOT NULL,
+                    user_id BIGINT NOT NULL,
                     username TEXT NOT NULL DEFAULT '',
                     items_json TEXT NOT NULL,
-                    total_price INTEGER NOT NULL CHECK (total_price >= 0),
+                    total_price BIGINT NOT NULL CHECK (total_price >= 0),
                     address TEXT NOT NULL DEFAULT '',
                     phone TEXT NOT NULL DEFAULT '',
                     comment TEXT NOT NULL DEFAULT '',
@@ -145,6 +145,9 @@ def init_db() -> None:
                 );
                 """
             )
+            # Migrate existing tables: Telegram user IDs and totals can exceed int32.
+            cursor.execute("ALTER TABLE orders ALTER COLUMN user_id TYPE BIGINT;")
+            cursor.execute("ALTER TABLE orders ALTER COLUMN total_price TYPE BIGINT;")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_orders_created_at ON orders(created_at);")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_products_active_category ON products(is_active, category);")
             cursor.execute(
